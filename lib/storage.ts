@@ -4,87 +4,126 @@ import { Database } from './database.types';
 const supabase = createClientComponentClient<Database>();
 
 export class StorageService {
-  // Create storage bucket if it doesn't exist
-  static async ensureBucketExists(bucket: string = 'media'): Promise<void> {
+  // Check if storage bucket exists and is accessible
+  static async checkBucketExists(bucket: string = 'media'): Promise<boolean> {
     try {
-      // Try to list files in the bucket to check if it exists
+      // Try to list files in the bucket to verify it exists and is accessible
       const { error } = await supabase.storage.from(bucket).list('', { limit: 1 });
       
-      if (error && error.message.includes('Bucket not found')) {
-        // Create the bucket
-        const { error: createError } = await supabase.storage.createBucket(bucket, {
-          public: true,
-          allowedMimeTypes: [
-            'image/jpeg',
-            'image/jpg',
-            'image/png', 
-            'image/webp',
-            'video/mp4',
-            'video/quicktime'
-          ],
-          fileSizeLimit: 20971520 // 20MB
-        });
-        
-        if (createError) {
-          throw new Error(`Failed to create bucket: ${createError.message}`);
-        }
-      } else if (error) {
-        throw new Error(`Storage error: ${error.message}`);
+      if (error) {
+        console.error('Bucket check failed:', error);
+        return false;
       }
-    } catch (error: any) {
-      console.error('Bucket check/creation error:', error);
-      throw error;
+      
+      return true;
+    } catch (error) {
+      console.error('Bucket check failed:', error);
+      return false;
     }
   }
 
-  // Upload file to Supabase Storage
+  // Upload file to Supabase Storage with improved error handling
   static async uploadFile(file: File, bucket: string = 'media'): Promise<string> {
-    // Ensure bucket exists
-    await this.ensureBucketExists(bucket);
+    try {
+      console.log('Starting file upload:', { fileName: file.name, size: file.size, type: file.type });
+      
+      // Check file size (max 20MB)
+      const maxSize = 20 * 1024 * 1024; // 20MB in bytes
+      if (file.size > maxSize) {
+        throw new Error('File size must be less than 20MB');
+      }
 
-    // Generate unique filename
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
-    const filePath = `articles/${fileName}`;
+      // Validate file type
+      const allowedTypes = [
+        'image/jpeg',
+        'image/jpg', 
+        'image/png',
+        'image/webp',
+        'image/gif',
+        'video/mp4',
+        'video/quicktime', // .mov files
+        'video/avi',
+        'video/webm',
+        'video/x-msvideo' // .avi files alternative MIME type
+      ];
 
-    // Check file size (max 20MB)
-    const maxSize = 20 * 1024 * 1024; // 20MB in bytes
-    if (file.size > maxSize) {
-      throw new Error('File size must be less than 20MB');
+      console.log('File type:', file.type);
+      
+      if (!allowedTypes.includes(file.type)) {
+        // Additional check for common video extensions if MIME type is not recognized
+        const fileName = file.name.toLowerCase();
+        const videoExtensions = ['.mp4', '.mov', '.avi', '.webm'];
+        const imageExtensions = ['.jpg', '.jpeg', '.png', '.webp', '.gif'];
+        
+        const hasValidExtension = [...videoExtensions, ...imageExtensions].some(ext => fileName.endsWith(ext));
+        
+        if (!hasValidExtension) {
+          throw new Error('Invalid file type. Only JPG, PNG, WEBP, GIF, MP4, MOV, AVI, and WEBM files are allowed.');
+        }
+        
+        console.log('File type not recognized by MIME, but extension is valid:', fileName);
+      }
+
+      // Check if bucket exists (do not try to create it)
+      const bucketExists = await this.checkBucketExists(bucket);
+      if (!bucketExists) {
+        throw new Error(`Storage bucket '${bucket}' does not exist. Please create it manually in the Supabase dashboard.`);
+      }
+
+      // Generate unique filename
+      const fileExt = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+      const timestamp = Date.now();
+      const randomStr = Math.random().toString(36).substring(2, 8);
+      const fileName = `${timestamp}-${randomStr}.${fileExt}`;
+      const filePath = `articles/${fileName}`;
+
+      console.log('Uploading to path:', filePath);
+
+      // Upload file to Supabase Storage with retry logic
+      let uploadAttempt = 0;
+      const maxAttempts = 3;
+      let uploadResult: any;
+      
+      while (uploadAttempt < maxAttempts) {
+        uploadAttempt++;
+        console.log(`Upload attempt ${uploadAttempt}/${maxAttempts}`);
+        
+        const { data, error } = await supabase.storage
+          .from(bucket)
+          .upload(filePath, file, {
+            cacheControl: '3600',
+            upsert: uploadAttempt > 1 // Allow overwrite on retry
+          });
+
+        if (!error) {
+          uploadResult = { data, error };
+          break;
+        }
+        
+        console.error(`Upload attempt ${uploadAttempt} failed:`, error);
+        
+        if (uploadAttempt === maxAttempts) {
+          throw new Error(`Upload failed after ${maxAttempts} attempts: ${error.message}`);
+        }
+        
+        // Wait before retry
+        await new Promise(resolve => setTimeout(resolve, 1000 * uploadAttempt));
+      }
+
+      console.log('Upload successful:', uploadResult.data);
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from(bucket)
+        .getPublicUrl(filePath);
+
+      console.log('Generated public URL:', publicUrl);
+      return publicUrl;
+      
+    } catch (error: any) {
+      console.error('File upload error:', error);
+      throw new Error(`Upload failed: ${error.message || 'Unknown error occurred'}`);
     }
-
-    // Validate file type
-    const allowedTypes = [
-      'image/jpeg',
-      'image/jpg', 
-      'image/png',
-      'image/webp',
-      'video/mp4',
-      'video/quicktime' // .mov files
-    ];
-
-    if (!allowedTypes.includes(file.type)) {
-      throw new Error('Invalid file type. Only JPG, PNG, WEBP, MP4, and MOV files are allowed.');
-    }
-
-    // Upload file to Supabase Storage
-    const { data, error } = await supabase.storage
-      .from(bucket)
-      .upload(filePath, file, {
-        cacheControl: '3600',
-        upsert: false
-      });
-
-    if (error) {
-      throw new Error(`Upload failed: ${error.message}`);
-    }
-
-    // Get public URL
-    const { data: { publicUrl } } = supabase.storage
-      .from(bucket)
-      .getPublicUrl(filePath);
-
-    return publicUrl;
   }
 
   // Delete file from Supabase Storage

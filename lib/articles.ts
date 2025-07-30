@@ -37,14 +37,11 @@ export class ArticleService {
     return data;
   }
 
-  // Delete an article (soft delete by setting status to archived)
+  // Delete an article (permanent delete)
   static async deleteArticle(id: string): Promise<void> {
     const { error } = await supabase
       .from('articles')
-      .update({ 
-        status: 'archived',
-        updated_at: new Date().toISOString() 
-      })
+      .delete()
       .eq('id', id);
 
     if (error) throw error;
