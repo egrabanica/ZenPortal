@@ -5,8 +5,11 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:analyze": "set ANALYZE=true && next build",
+    "build:production": "set NODE_ENV=production && next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "analyze": "npm run build:analyze"
   },
   "dependencies": {
     "@emailjs/browser": "^4.4.1",
@@ -77,6 +80,8 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
-    "supabase": "^2.33.7"
+    "@next/bundle-analyzer": "^15.4.5",
+    "supabase": "^2.33.7",
+    "webpack-bundle-analyzer": "^4.10.2"
   }
 }

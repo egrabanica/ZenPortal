@@ -8,7 +8,7 @@ export async function GET(
 ) {
   try {
     const cookieStore = await cookies();
-    const supabase = createServerComponentClient({ cookies: () => cookieStore });
+    const supabase = createServerComponentClient({ cookies: () => Promise.resolve(cookieStore) });
     const { moduleId } = await params;
     
     const { data: materials, error } = await supabase
@@ -35,7 +35,7 @@ export async function POST(
 ) {
   try {
     const cookieStore = await cookies();
-    const supabase = createServerComponentClient({ cookies: () => cookieStore });
+    const supabase = createServerComponentClient({ cookies: () => Promise.resolve(cookieStore) });
     const { moduleId } = await params;
     
     // Check if user is authenticated and has admin/editor role
@@ -95,7 +95,7 @@ export async function DELETE(
 ) {
   try {
     const cookieStore = await cookies();
-    const supabase = createServerComponentClient({ cookies: () => cookieStore });
+    const supabase = createServerComponentClient({ cookies: () => Promise.resolve(cookieStore) });
     
     // Check if user is authenticated and has admin/editor role
     const { data: { user }, error: userError } = await supabase.auth.getUser();

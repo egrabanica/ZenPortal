@@ -8,7 +8,7 @@ export async function DELETE(
 ) {
   try {
     const cookieStore = await cookies();
-    const supabase = createServerComponentClient({ cookies: () => cookieStore });
+    const supabase = createServerComponentClient({ cookies: () => Promise.resolve(cookieStore) });
     const { id, moduleId } = await params;
     
     // Check if user is authenticated
@@ -42,7 +42,7 @@ export async function PUT(
 ) {
   try {
     const cookieStore = await cookies();
-    const supabase = createServerComponentClient({ cookies: () => cookieStore });
+    const supabase = createServerComponentClient({ cookies: () => Promise.resolve(cookieStore) });
     const { id, moduleId } = await params;
     
     // Check if user is authenticated
