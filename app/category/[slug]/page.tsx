@@ -1,15 +1,13 @@
 import { notFound } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArticleService } from '@/lib/articles';
-import { Article } from '@/lib/database.types';
+import { Article, CATEGORIES, CATEGORY_LABELS } from '@/lib/database.types';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
-import { CATEGORY_STRUCTURE } from '@/lib/database.types';
 
 export async function generateStaticParams() {
-  const categories = Object.keys(CATEGORY_STRUCTURE);
-  return categories.map((slug) => ({ slug }));
+  return CATEGORIES.map((slug) => ({ slug }));
 }
 
 async function CategoryArticleList({ slug }: { slug: string }) {
@@ -51,18 +49,20 @@ async function CategoryArticleList({ slug }: { slug: string }) {
 
 export default async function CategoryPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const categoryInfo = CATEGORY_STRUCTURE[slug as keyof typeof CATEGORY_STRUCTURE];
-
-  if (!categoryInfo) {
+  
+  // Check if the slug is a valid category
+  if (!CATEGORIES.includes(slug as any)) {
     notFound();
   }
+
+  const categoryLabel = CATEGORY_LABELS[slug as keyof typeof CATEGORY_LABELS];
 
   return (
     <div className="container mx-auto px-4 py-8">
       <Card>
         <CardHeader>
-          <CardTitle className="text-3xl font-bold capitalize">
-            {categoryInfo.label}
+          <CardTitle className="text-3xl font-bold">
+            {categoryLabel}
           </CardTitle>
         </CardHeader>
         <CardContent>
