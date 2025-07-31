@@ -12,20 +12,44 @@ import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/theme-toggle';
-import { Search, Menu, X } from 'lucide-react';
+import { 
+  Search, 
+  Menu, 
+  X, 
+  Home, 
+  Vote, 
+  Users, 
+  MapPin, 
+  Heart, 
+  CheckCircle, 
+  MessageSquare, 
+  GraduationCap 
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { useRouter } from 'next/navigation';
 import { useTheme } from 'next-themes';
 
+const iconMap = {
+  Home,
+  Vote,
+  Users,
+  MapPin,
+  Heart,
+  CheckCircle,
+  MessageSquare,
+  GraduationCap,
+};
+
 const navigation = [
-  { name: 'Home', href: '/' },
-  { name: 'Politics', href: '/category/politics' },
-  { name: 'Minority News', href: '/category/minority-news' },
-  { name: 'Local News', href: '/category/local-news' },
-  { name: 'Feminist', href: '/category/feminist' },
-  { name: 'Fact Check', href: '/fact-check' },
-  { name: 'Courses', href: '/courses' },
+  { name: 'Home', href: '/', icon: Home },
+  { name: 'Politics', href: '/category/politics', icon: Vote },
+  { name: 'Minority News', href: '/category/minority-news', icon: Users },
+  { name: 'Local News', href: '/category/local-news', icon: MapPin },
+  { name: 'Feminist', href: '/category/feminist', icon: Heart },
+  { name: 'Fact Check', href: '/fact-check', icon: CheckCircle },
+  { name: 'FactCheck Response', href: '/category/factcheck-response', icon: MessageSquare },
+  { name: 'Courses', href: '/courses', icon: GraduationCap },
 ];
 
 export function Header() {
@@ -110,22 +134,39 @@ export function Header() {
 
         {/* Mobile Navigation */}
         {isOpen && (
-          <div className="md:hidden py-4">
-            {navigation.map((item) => (
-              <Link
-                key={item.name}
-                href={item.href}
-                className={cn(
-                  'block py-2 text-base font-medium transition-colors hover:text-primary',
-                  pathname === item.href
-                    ? 'text-foreground'
-                    : 'text-muted-foreground'
-                )}
-                onClick={() => setIsOpen(false)}
+          <div className="md:hidden py-4 border-t">
+            <div className="grid grid-cols-2 gap-2">
+              {navigation.map((item) => {
+                const IconComponent = item.icon;
+                return (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    className={cn(
+                      'flex items-center gap-3 p-3 rounded-lg text-sm font-medium transition-colors hover:bg-muted',
+                      pathname === item.href
+                        ? 'text-foreground bg-muted'
+                        : 'text-muted-foreground'
+                    )}
+                    onClick={() => setIsOpen(false)}
+                  >
+                    <IconComponent className="h-5 w-5 flex-shrink-0" />
+                    <span className="truncate">{item.name}</span>
+                  </Link>
+                );
+              })}
+            </div>
+            <div className="mt-4 pt-4 border-t">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full justify-start gap-3"
+                aria-label="Search"
               >
-                {item.name}
-              </Link>
-            ))}
+                <Search className="h-4 w-4" />
+                Search
+              </Button>
+            </div>
           </div>
         )}
       </nav>

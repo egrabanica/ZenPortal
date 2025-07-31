@@ -22,12 +22,34 @@ export class ArticleService {
 
   // Update an existing article
   static async updateArticle(id: string, updates: ArticleUpdate): Promise<Article> {
+    // Get the current article to check its status
+    const { data: currentArticle } = await supabase
+      .from('articles')
+      .select('status, published_at')
+      .eq('id', id)
+      .single();
+
+    let publishedAt = updates.published_at;
+    
+    // If we're changing status to published and it wasn't published before, set published_at
+    if (updates.status === 'published' && currentArticle?.status !== 'published') {
+      publishedAt = new Date().toISOString();
+    }
+    // If we're changing from published to draft, clear published_at
+    else if (updates.status === 'draft' && currentArticle?.status === 'published') {
+      publishedAt = null;
+    }
+    // If already published and staying published, keep the original published_at
+    else if (updates.status === 'published' && currentArticle?.status === 'published') {
+      publishedAt = currentArticle.published_at;
+    }
+
     const { data, error } = await supabase
       .from('articles')
       .update({
         ...updates,
         updated_at: new Date().toISOString(),
-        published_at: updates.status === 'published' ? new Date().toISOString() : updates.published_at,
+        published_at: publishedAt,
       })
       .eq('id', id)
       .select()

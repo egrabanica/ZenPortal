@@ -97,6 +97,10 @@ export type ProfileUpdate = Database['public']['Tables']['profiles']['Update'];
 
 // Category structure with subcategories
 export const CATEGORY_STRUCTURE = {
+  'home': {
+    label: 'Home',
+    subcategories: ['breaking', 'featured', 'trending', 'latest']
+  },
   'politics': {
     label: 'Politics',
     subcategories: ['local', 'national', 'international', 'elections', 'policy']
@@ -116,6 +120,10 @@ export const CATEGORY_STRUCTURE = {
   'fact-check': {
     label: 'Fact Check',
     subcategories: ['politics', 'health', 'science', 'social-media', 'misinformation']
+  },
+  'factcheck-response': {
+    label: 'FactCheck Response',
+    subcategories: ['verified', 'debunked', 'investigation', 'follow-up', 'clarification']
   },
   'general': {
     label: 'General',

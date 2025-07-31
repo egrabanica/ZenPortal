@@ -80,6 +80,9 @@ export default function NewArticle() {
   };
 
   const handleSave = async () => {
+    console.log('🚀 Starting article save process...');
+    console.log('Form data:', { title, content: content.substring(0, 100) + '...', categories, publishStatus, authorName });
+    
     if (!title.trim()) {
       toast({
         title: 'Validation Error',
@@ -119,46 +122,62 @@ export default function NewArticle() {
     setLoading(true);
 
     try {
+      console.log('✅ Validation passed, checking admin profile...');
+      const adminProfile = await AuthService.requireAdmin();
+      console.log('✅ Admin profile verified:', adminProfile.email);
+
       const slug = ArticleService.generateSlug(title);
       const excerpt = ArticleService.generateExcerpt(content);
+      console.log('✅ Generated slug:', slug);
+      console.log('✅ Generated excerpt:', excerpt.substring(0, 50) + '...');
 
-      const adminProfile = await AuthService.requireAdmin();
-
-      let finalMediaUrl = mediaUrl;
+      let finalMediaUrl = null;
       let mediaType: 'image' | 'video' | null = null;
 
-      // Handle file upload if file is selected
-      if (mediaFile) {
+      // Handle media URL (skip file upload for now to isolate the issue)
+      if (mediaUrl && !mediaFile) {
+        console.log('📷 Using provided media URL:', mediaUrl);
+        finalMediaUrl = mediaUrl;
+        mediaType = getMediaTypeFromUrl(mediaUrl);
+      } else if (mediaFile) {
+        console.log('📁 File upload requested, attempting upload...');
         try {
           finalMediaUrl = await StorageService.uploadFile(mediaFile);
           mediaType = getMediaTypeFromFile(mediaFile);
+          console.log('✅ File uploaded successfully:', finalMediaUrl);
         } catch (uploadError: any) {
+          console.error('❌ Upload failed:', uploadError);
           toast({
             title: 'Upload Error',
-            description: uploadError.message,
+            description: uploadError.message + ' - Article will be saved without media.',
             variant: 'destructive',
           });
-          return;
+          // Continue without media instead of failing completely
+          finalMediaUrl = null;
+          mediaType = null;
         }
-      } else if (mediaUrl) {
-        // Determine media type from URL
-        mediaType = getMediaTypeFromUrl(mediaUrl);
       }
 
       const newArticle = {
-        title,
-        content,
+        title: title.trim(),
+        content: content.trim(),
         categories,
-        media_url: finalMediaUrl || null,
+        media_url: finalMediaUrl,
         media_type: mediaType,
         slug,
         excerpt,
         author_id: adminProfile.id,
-        author_name: authorName,
+        author_name: authorName.trim(),
         status: publishStatus,
       };
 
-      await ArticleService.createArticle(newArticle);
+      console.log('📝 Creating article with data:', {
+        ...newArticle,
+        content: newArticle.content.substring(0, 100) + '...'
+      });
+
+      const createdArticle = await ArticleService.createArticle(newArticle);
+      console.log('✅ Article created successfully:', createdArticle.id);
 
       toast({
         title: 'Success',
@@ -167,11 +186,20 @@ export default function NewArticle() {
           : 'Article saved as draft.',
       });
 
-      router.push('/admin/dashboard');
+      // Small delay before redirect to ensure the toast is visible
+      setTimeout(() => {
+        router.push('/admin/dashboard');
+      }, 1000);
     } catch (error: any) {
+      console.error('💥 Article creation failed:', {
+        message: error.message,
+        stack: error.stack,
+        error
+      });
+      
       toast({
         title: 'Error',
-        description: error.message,
+        description: `Failed to ${publishStatus === 'published' ? 'publish' : 'save'} article: ${error.message}`,
         variant: 'destructive',
       });
     } finally {
