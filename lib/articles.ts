@@ -6,17 +6,40 @@ const supabase = createClientComponentClient<Database>();
 export class ArticleService {
   // Create a new article
   static async createArticle(article: ArticleInsert): Promise<Article> {
+    console.log('📝 ArticleService.createArticle called with:', {
+      ...article,
+      content: article.content?.substring(0, 100) + '...'
+    });
+
+    const articleData = {
+      ...article,
+      updated_at: new Date().toISOString(),
+      published_at: article.status === 'published' ? new Date().toISOString() : null,
+    };
+
+    console.log('📝 Final article data to insert:', {
+      ...articleData,
+      content: articleData.content?.substring(0, 100) + '...'
+    });
+
     const { data, error } = await supabase
       .from('articles')
-      .insert({
-        ...article,
-        updated_at: new Date().toISOString(),
-        published_at: article.status === 'published' ? new Date().toISOString() : null,
-      })
+      .insert(articleData)
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error('❌ Article creation failed:', error);
+      throw error;
+    }
+    
+    console.log('✅ Article created successfully:', {
+      id: data.id,
+      title: data.title,
+      status: data.status,
+      published_at: data.published_at
+    });
+    
     return data;
   }
 
@@ -119,6 +142,8 @@ export class ArticleService {
 
   // Get latest articles
   static async getLatestArticles(limit: number = 10): Promise<Article[]> {
+    console.log(`📰 Fetching latest articles (limit: ${limit})`);
+    
     const { data, error } = await supabase
       .from('articles')
       .select('*')
@@ -126,7 +151,18 @@ export class ArticleService {
       .order('published_at', { ascending: false })
       .limit(limit);
 
-    if (error) throw error;
+    if (error) {
+      console.error('❌ Error fetching latest articles:', error);
+      throw error;
+    }
+    
+    console.log(`✅ Found ${data?.length || 0} published articles:`, data?.map(a => ({
+      id: a.id.substring(0, 8),
+      title: a.title,
+      status: a.status,
+      published_at: a.published_at
+    })));
+    
     return data || [];
   }
 
