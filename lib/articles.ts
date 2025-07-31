@@ -115,6 +115,8 @@ export class ArticleService {
 
   // Get published articles by category
   static async getPublishedArticlesByCategory(category: string): Promise<Article[]> {
+    console.log(`🔍 Fetching articles for category: '${category}'`);
+    
     const { data, error } = await supabase
       .from('articles')
       .select('*')
@@ -122,7 +124,21 @@ export class ArticleService {
       .contains('categories', [category])
       .order('published_at', { ascending: false });
 
-    if (error) throw error;
+    if (error) {
+      console.error(`❌ Error fetching articles for category '${category}':`, error);
+      throw error;
+    }
+    
+    console.log(`✅ Found ${data?.length || 0} articles for category '${category}':`, 
+      data?.map(a => ({
+        id: a.id.substring(0, 8),
+        title: a.title,
+        categories: a.categories,
+        status: a.status,
+        published_at: a.published_at
+      }))
+    );
+    
     return data || [];
   }
 

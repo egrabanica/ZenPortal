@@ -97,7 +97,7 @@ export function CategoryPageClient({ category }: CategoryPageClientProps) {
               <div className="flex flex-wrap gap-1 mb-2">
                 {article.categories.slice(0, 2).map((cat) => (
                   <Badge key={cat} variant="secondary" className="text-xs">
-                    {cat.includes(':') ? cat.split(':')[1] : cat}
+                    {cat}
                   </Badge>
                 ))}
                 {article.categories.length > 2 && (
