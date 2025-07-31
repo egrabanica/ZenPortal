@@ -20,12 +20,21 @@ export async function GET(
         description,
         order_index,
         created_at,
-        course_videos (
+course_videos (
           id,
           title,
           description,
           video_url,
           duration,
+          order_index
+        ),
+        course_materials (
+          id,
+          title,
+          description,
+          material_url,
+          material_type,
+          file_size,
           order_index
         )
       `)
@@ -40,7 +49,8 @@ export async function GET(
     // Transform the data to match the expected format
     const transformedModules = modules?.map(module => ({
       ...module,
-      videos: module.course_videos || []
+      videos: module.course_videos || [],
+      materials: module.course_materials || []
     })) || [];
 
     return NextResponse.json(transformedModules);

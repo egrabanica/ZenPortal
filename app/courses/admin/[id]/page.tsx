@@ -9,6 +9,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { VideoUpload } from '@/components/ui/video-upload';
+import { FileInput } from '@/components/ui/file-input';
+import { DocumentUpload } from '@/components/ui/document-upload';
 import { useToast } from '@/hooks/use-toast';
 import { Plus, Edit, Trash2, PlayCircle, Clock, FileVideo } from 'lucide-react';
 import Link from 'next/link';
@@ -27,6 +29,7 @@ interface Module {
   description: string;
   order_index: number;
   videos: Video[];
+  materials: Material[];
 }
 
 interface Video {
@@ -38,9 +41,27 @@ interface Video {
   order_index: number;
 }
 
+interface Material {
+  id: string;
+  title: string;
+  description?: string;
+  material_url: string;
+  material_type: string;
+  file_size?: number;
+  order_index: number;
+}
+
 interface NewModule {
   title: string;
   description: string;
+}
+
+interface NewMaterial {
+  title: string;
+  description: string;
+  material_url: string;
+  material_type: string;
+  file_size: number;
 }
 
 interface NewVideo {
@@ -58,6 +79,9 @@ export default function CourseManagementPage() {
   const [loading, setLoading] = useState(true);
   const [isModuleDialogOpen, setIsModuleDialogOpen] = useState(false);
   const [isVideoDialogOpen, setIsVideoDialogOpen] = useState(false);
+  const [isMaterialDialogOpen, setIsMaterialDialogOpen] = useState(false);
+  const [selectedMaterialModuleId, setSelectedMaterialModuleId] = useState<string | null>(null);
+  const [newMaterial, setNewMaterial] = useState<NewMaterial>({ title: '', description: '', material_url: '', material_type: 'other', file_size: 0 });
   const [selectedModuleId, setSelectedModuleId] = useState<string | null>(null);
   const [newModule, setNewModule] = useState<NewModule>({ title: '', description: '' });
   const [newVideo, setNewVideo] = useState<NewVideo>({ title: '', description: '', video_url: '', duration: 0 });
@@ -136,6 +160,57 @@ export default function CourseManagementPage() {
       video_url: videoData.url,
       duration: videoData.duration || 0
     }));
+  };
+
+  const handleCreateMaterial = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedMaterialModuleId) {
+      toast({
+        title: 'Error',
+        description: 'No module selected for material.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (!newMaterial.title.trim() || !newMaterial.material_url.trim()) {
+      toast({
+        title: 'Error',
+        description: 'Material title and URL are required.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/courses/${courseId}/modules/${selectedMaterialModuleId}/materials`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newMaterial),
+      });
+
+      const responseData = await response.json();
+      if (response.ok) {
+        toast({
+          title: 'Material Added',
+          description: 'Your material has been added to the module successfully.',
+        });
+        setIsMaterialDialogOpen(false);
+        setSelectedMaterialModuleId(null);
+        setNewMaterial({ title: '', description: '', material_url: '', material_type: 'other', file_size: 0 });
+        fetchModules();
+      } else {
+        throw new Error(responseData.error || `Server error: ${response.status}`);
+      }
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to add material. Please try again.',
+        variant: 'destructive',
+      });
+    }
   };
 
   const handleCreateVideo = async (e: React.FormEvent) => {
@@ -235,6 +310,11 @@ export default function CourseManagementPage() {
         variant: 'destructive',
       });
     }
+  };
+
+  const openMaterialDialog = (moduleId: string) => {
+    setSelectedMaterialModuleId(moduleId);
+    setIsMaterialDialogOpen(true);
   };
 
   const openVideoDialog = (moduleId: string) => {
@@ -365,26 +445,38 @@ export default function CourseManagementPage() {
         <Accordion type="single" collapsible className="space-y-4">
           {modules.map((module, index) => (
             <AccordionItem key={module.id} value={module.id} className="border rounded-lg">
-              <div className="flex items-center">
-                <AccordionTrigger className="flex-1 px-6 py-4">
+              <div className="flex items-center gap-4">
+                <AccordionTrigger className="flex-1 px-6 py-4 hover:no-underline">
                   <div className="flex items-center justify-between w-full">
                     <div className="text-left">
-                      <h3 className="text-lg font-semibold">
-                        Module {index + 1}: {module.title}
-                      </h3>
-                      <p className="text-sm text-muted-foreground">{module.description}</p>
+                      <div className="flex items-center gap-3 mb-2">
+                        <div className="bg-primary/10 text-primary rounded-full w-8 h-8 flex items-center justify-center text-sm font-semibold">
+                          {index + 1}
+                        </div>
+                        <h3 className="text-lg font-semibold">
+                          {module.title}
+                        </h3>
+                      </div>
+                      <p className="text-sm text-muted-foreground ml-11">{module.description}</p>
                     </div>
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground mr-4">
-                      <span>{module.videos?.length || 0} videos</span>
+                    <div className="flex items-center gap-6 text-sm text-muted-foreground mr-4">
+                      <div className="flex items-center gap-2">
+                        <PlayCircle className="h-4 w-4" />
+                        <span>{module.videos?.length || 0} videos</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <FileVideo className="h-4 w-4" />
+                        <span>{module.materials?.length || 0} materials</span>
+                      </div>
                     </div>
                   </div>
                 </AccordionTrigger>
-                <div className="px-2">
+                <div className="px-4 py-2">
                   <Button
-                    variant="outline"
+                    variant="ghost"
                     size="sm"
                     onClick={() => handleDeleteModule(module.id)}
-                    className="text-red-600 hover:text-red-700"
+                    className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/20"
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
@@ -429,14 +521,118 @@ export default function CourseManagementPage() {
                       <p>No videos added yet</p>
                     </div>
                   )}
+                  <div className="flex justify-between items-center">
+                    <h4 className="font-medium">Materials</h4>
+                    <Button size="sm" onClick={() => openMaterialDialog(module.id)}>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Material
+                    </Button>
+                  </div>
+
+                  {/* Material list */}
+                  {module.materials && module.materials.length > 0 ? (
+                    <div className="space-y-2">
+                      {module.materials.map((material) => (
+                        <div key={material.id} className="flex items-center justify-between p-3 border rounded">
+                          <div className="flex items-center gap-3">
+                            <FileVideo className="h-5 w-5 text-muted-foreground" />
+                            <div>
+                              <p className="font-medium">{material.title}</p>
+                              {material.description && (
+                                <p className="text-sm text-muted-foreground">{material.description}</p>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                            {material.material_type}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <FileVideo className="h-12 w-12 mx-auto mb-2" />
+                      <p>No materials added yet</p>
+                    </div>
+                  )}
                 </div>
               </AccordionContent>
-            </AccordionItem>
-          ))}
-        </Accordion>
-      )}
+              </AccordionItem>
+            ))}
+          </Accordion>
+        )}
 
-      {/* Video Upload Dialog */}
+        {/* Material Upload Dialog */}
+        <Dialog open={isMaterialDialogOpen} onOpenChange={setIsMaterialDialogOpen}>
+          <DialogContent className="sm:max-w-[600px]">
+            <DialogHeader>
+              <DialogTitle>Add Material to Module</DialogTitle>
+            </DialogHeader>
+            <form onSubmit={handleCreateMaterial} className="space-y-6">
+              <div className="space-y-2">
+                <label htmlFor="material-title" className="text-sm font-medium">
+                  Material Title
+                </label>
+                <Input
+                  id="material-title"
+                  value={newMaterial.title}
+                  onChange={(e) => setNewMaterial({ ...newMaterial, title: e.target.value })}
+                  placeholder="Enter material title"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label htmlFor="material-description" className="text-sm font-medium">
+                  Description (optional)
+                </label>
+                <Textarea
+                  id="material-description"
+                  value={newMaterial.description}
+                  onChange={(e) => setNewMaterial({ ...newMaterial, description: e.target.value })}
+                  placeholder="Enter material description"
+                  rows={2}
+                />
+              </div>
+
+              <div className="space-y-4">
+                <DocumentUpload
+                  onDocumentUploaded={(data) => {
+                    setNewMaterial({
+                      ...newMaterial,
+                      material_url: data.url,
+                      material_type: data.type,
+                      file_size: data.size
+                    });
+                  }}
+                />
+              </div>
+
+              <div className="flex gap-2 pt-4">
+                <Button 
+                  type="submit" 
+                  className="flex-1"
+                  disabled={!newMaterial.material_url}
+                >
+                  Add Material
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setIsMaterialDialogOpen(false);
+                    setSelectedMaterialModuleId(null);
+                    setNewMaterial({ title: '', description: '', material_url: '', material_type: 'other', file_size: 0 });
+                  }}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
+
+        {/* Video Upload Dialog */}
       <Dialog open={isVideoDialogOpen} onOpenChange={setIsVideoDialogOpen}>
         <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>

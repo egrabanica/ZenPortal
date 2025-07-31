@@ -7,6 +7,8 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { MediaInput } from '@/components/ui/media-input';
 import { useToast } from '@/hooks/use-toast';
+import { CheckCircle } from 'lucide-react';
+import emailjs from '@emailjs/browser';
 
 export default function FactCheckPage() {
   const [formData, setFormData] = useState({
@@ -28,30 +30,35 @@ const handleSubmit = async (e: React.FormEvent) => {
         mediaInfo = `\nMedia URL: ${mediaUrl}`;
       }
 
-      const response = await fetch('/api/send-email', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          to: 'info@zennews.net',
-          subject: `Fact Check Submission: ${formData.title}`,
-          text: `Title: ${formData.title}\nURL: ${formData.url}\nDescription: ${formData.description}${mediaInfo}`,
-        }),
-      });
+      // EmailJS configuration
+      const templateParams = {
+        to_email: 'info@zennews.net',
+        subject: `Fact Check Submission: ${formData.title}`,
+        title: formData.title,
+        url: formData.url || 'Not provided',
+        description: formData.description,
+        media_info: mediaInfo || 'No media attached',
+        timestamp: new Date().toLocaleString(),
+      };
 
-      if (response.ok) {
-        toast({
-          title: 'Submission Received',
-          description: "Thanks for submitting. We'll review your news and update it in the Fact Check section.",
-        });
-        setFormData({ title: '', url: '', description: '' });
-        setMediaUrl('');
-        setMediaFile(null);
-      } else {
-        throw new Error('Failed to send submission.');
-      }
+      // EmailJS send email
+      await emailjs.send(
+        process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID!,
+        process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID!,
+        templateParams,
+        process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY!
+      );
+
+      toast({
+        title: 'Submission Received',
+        description: "Thanks for submitting. We'll review your news and update it in the Fact Check section.",
+      });
+      setFormData({ title: '', url: '', description: '' });
+      setMediaUrl('');
+      setMediaFile(null);
+      
     } catch (error) {
+      console.error('EmailJS error:', error);
       toast({
         title: 'Error',
         description: 'Failed to send submission. Please try again later.',
@@ -86,7 +93,10 @@ const handleSubmit = async (e: React.FormEvent) => {
   return (
     <div className="container mx-auto px-4 py-8 space-y-8">
       <div className="max-w-2xl mx-auto space-y-4">
-        <h1 className="text-4xl font-bold">Fact Check Request</h1>
+        <div className="flex items-center gap-3">
+          <CheckCircle className="h-8 w-8 text-red-500" />
+          <h1 className="text-4xl font-bold">Fact Check Request</h1>
+        </div>
         <p className="text-lg text-muted-foreground">
           Submit content you would like our fact-checking team to verify. We aim to
           combat misinformation by providing accurate, well-researched information.

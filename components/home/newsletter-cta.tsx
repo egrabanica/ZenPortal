@@ -15,14 +15,38 @@ export function NewsletterCTA() {
   const [email, setEmail] = useState('');
   const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implement newsletter subscription
-    toast({
-      title: 'Success!',
-      description: 'Thank you for subscribing to our newsletter.',
-    });
-    setEmail('');
+    
+    try {
+      const response = await fetch('/api/send-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          isFactCheck: true, // Will send to info@zennews.net
+          subject: 'Newsletter Subscription',
+          text: `New newsletter subscription request:\n\nEmail: ${email}\n\nTimestamp: ${new Date().toISOString()}`,
+        }),
+      });
+
+      if (response.ok) {
+        toast({
+          title: 'Success!',
+          description: 'Thank you for subscribing to our newsletter.',
+        });
+        setEmail('');
+      } else {
+        throw new Error('Failed to subscribe');
+      }
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to subscribe. Please try again later.',
+        variant: 'destructive',
+      });
+    }
   };
 
   return (
