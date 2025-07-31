@@ -14,6 +14,7 @@ export interface Database {
           status: 'draft' | 'published' | 'archived';
           featured: boolean;
           author_id: string;
+          author_name?: string | null;
           created_at: string;
           updated_at: string;
           published_at: string | null;
@@ -30,6 +31,7 @@ export interface Database {
           status?: 'draft' | 'published' | 'archived';
           featured?: boolean;
           author_id: string;
+          author_name?: string | null;
           created_at?: string;
           updated_at?: string;
           published_at?: string | null;
@@ -46,6 +48,7 @@ export interface Database {
           status?: 'draft' | 'published' | 'archived';
           featured?: boolean;
           author_id?: string;
+          author_name?: string | null;
           created_at?: string;
           updated_at?: string;
           published_at?: string | null;
@@ -94,37 +97,29 @@ export type ProfileUpdate = Database['public']['Tables']['profiles']['Update'];
 
 // Category structure with subcategories
 export const CATEGORY_STRUCTURE = {
-  'homepage': {
-    label: 'Homepage',
-    subcategories: ['breaking', 'featured', 'trending']
-  },
-  'latest': {
-    label: 'Latest',
-    subcategories: ['today', 'this-week', 'this-month']
-  },
-  'sports': {
-    label: 'Sports',
-    subcategories: ['football', 'basketball', 'soccer', 'tennis', 'baseball', 'olympics']
-  },
-  'entertainment': {
-    label: 'Entertainment',
-    subcategories: ['movies', 'tv-shows', 'music', 'celebrities', 'awards', 'streaming']
-  },
   'politics': {
     label: 'Politics',
     subcategories: ['local', 'national', 'international', 'elections', 'policy']
   },
-  'technology': {
-    label: 'Technology',
-    subcategories: ['ai', 'gadgets', 'software', 'cybersecurity', 'startups', 'science']
+  'minority-news': {
+    label: 'Minority News',
+    subcategories: ['civil-rights', 'community', 'representation', 'equality', 'diversity']
   },
-  'business': {
-    label: 'Business',
-    subcategories: ['finance', 'markets', 'economy', 'companies', 'crypto', 'real-estate']
+  'local-news': {
+    label: 'Local News',
+    subcategories: ['city', 'county', 'state', 'community', 'government', 'events']
+  },
+  'feminist': {
+    label: 'Feminist',
+    subcategories: ['rights', 'equality', 'workplace', 'politics', 'culture', 'activism']
   },
   'fact-check': {
     label: 'Fact Check',
-    subcategories: ['politics', 'health', 'science', 'social-media']
+    subcategories: ['politics', 'health', 'science', 'social-media', 'misinformation']
+  },
+  'general': {
+    label: 'General',
+    subcategories: ['breaking', 'featured', 'trending', 'latest']
   }
 } as const;
 

@@ -6,6 +6,7 @@
 
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useTheme } from 'next-themes';
@@ -32,7 +33,13 @@ const navigation = {
 
 export function Footer() {
   const { theme } = useTheme();
-  const logoSrc = theme === 'dark' ? '/logo-dark.png' : '/logo.png';
+  const [logoSrc, setLogoSrc] = useState('/logo.png');
+  const [currentYear, setCurrentYear] = useState(2025);
+
+  useEffect(() => {
+    setLogoSrc(theme === 'dark' ? '/logo-dark.png' : '/logo.png');
+    setCurrentYear(new Date().getFullYear());
+  }, [theme]);
 
   return (
     <footer className="bg-background border-t">
@@ -101,7 +108,7 @@ export function Footer() {
         </div>
         <div className="mt-8 pt-8 border-t">
           <p className="text-sm text-muted-foreground text-center">
-            © {new Date().getFullYear()} ZE News. All rights reserved.
+            © {currentYear} ZE News. All rights reserved.
           </p>
         </div>
       </div>

@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { MediaInput } from '@/components/ui/media-input';
 import { useToast } from '@/hooks/use-toast';
 
 export default function FactCheckPage() {
@@ -13,16 +14,50 @@ export default function FactCheckPage() {
     url: '',
     description: '',
   });
+  const [mediaUrl, setMediaUrl] = useState('');
+  const [mediaFile, setMediaFile] = useState<File | null>(null);
   const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implement fact check submission
-    toast({
-      title: 'Submission Received',
-      description: 'Thank you for contributing to fact-checking. Our team will review your submission.',
-    });
-    setFormData({ title: '', url: '', description: '' });
+    try {
+      let mediaInfo = '';
+      if (mediaFile) {
+        mediaInfo = `\nMedia File: ${mediaFile.name} (${(mediaFile.size / 1024 / 1024).toFixed(2)}MB)`;
+      } else if (mediaUrl) {
+        mediaInfo = `\nMedia URL: ${mediaUrl}`;
+      }
+
+      const response = await fetch('/api/send-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          to: 'info@zennews.net',
+          subject: `Fact Check Submission: ${formData.title}`,
+          text: `Title: ${formData.title}\nURL: ${formData.url}\nDescription: ${formData.description}${mediaInfo}`,
+        }),
+      });
+
+      if (response.ok) {
+        toast({
+          title: 'Submission Received',
+          description: "Thanks for submitting. We'll review your news and update it in the Fact Check section.",
+        });
+        setFormData({ title: '', url: '', description: '' });
+        setMediaUrl('');
+        setMediaFile(null);
+      } else {
+        throw new Error('Failed to send submission.');
+      }
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to send submission. Please try again later.',
+        variant: 'destructive',
+      });
+    }
   };
 
   const handleChange = (
@@ -30,6 +65,22 @@ export default function FactCheckPage() {
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleFileChange = (file: File | null) => {
+    setMediaFile(file);
+    // Clear URL when file is selected
+    if (file) {
+      setMediaUrl('');
+    }
+  };
+
+  const handleUrlChange = (url: string) => {
+    setMediaUrl(url);
+    // Clear file when URL is entered
+    if (url) {
+      setMediaFile(null);
+    }
   };
 
   return (
@@ -89,6 +140,14 @@ export default function FactCheckPage() {
                   rows={5}
                 />
               </div>
+
+              <MediaInput
+                label="Supporting Media (Image or Video) - Optional"
+                file={mediaFile}
+                url={mediaUrl}
+                onFileChange={handleFileChange}
+                onUrlChange={handleUrlChange}
+              />
 
               <Button type="submit" className="w-full">
                 Submit for Fact-Checking

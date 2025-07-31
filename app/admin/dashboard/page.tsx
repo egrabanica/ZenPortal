@@ -19,7 +19,8 @@ import {
   LogOutIcon,
   BarChart3Icon,
   FileTextIcon,
-  UserIcon
+  UserIcon,
+  GraduationCap
 } from 'lucide-react';
 
 export default function AdminDashboard() {
@@ -54,8 +55,8 @@ export default function AdminDashboard() {
         setStats(newStats);
       } catch (error: any) {
         toast({
-          title: 'Error',
-          description: error.message,
+          title: 'Access Denied',
+          description: error.message || 'You must be an admin to access this page.',
           variant: 'destructive',
         });
         router.push('/admin/signin');
@@ -120,7 +121,14 @@ export default function AdminDashboard() {
   const handleSignOut = async () => {
     try {
       await AuthService.signOut();
-      router.push('/');
+      
+      toast({
+        title: 'Success',
+        description: 'You have been signed out successfully.',
+      });
+      
+      // Force a hard redirect to clear all state
+      window.location.href = '/';
     } catch (error: any) {
       toast({
         title: 'Error',
@@ -132,9 +140,9 @@ export default function AdminDashboard() {
 
   const getStatusBadge = (status: string) => {
     const variants = {
-      published: 'default',
-      draft: 'secondary',
-      archived: 'outline'
+      published: 'default' as const,
+      draft: 'secondary' as const,
+      archived: 'outline' as const
     };
     return (
       <Badge variant={variants[status as keyof typeof variants] || 'outline'}>
@@ -235,12 +243,76 @@ export default function AdminDashboard() {
           </Card>
         </div>
 
-        {/* Articles Management */}
+        {/* Quick Actions */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          {/* Articles Management */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-xl">Article Management</CardTitle>
+                <Button asChild>
+                  <Link href="/admin/articles/new">
+                    <PlusIcon className="h-4 w-4 mr-2" />
+                    New Article
+                  </Link>
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground mb-4">
+                Create, edit, and manage news articles. Track drafts and published content.
+              </p>
+              <div className="flex gap-2">
+                <Button asChild variant="outline" size="sm">
+                  <Link href="/admin/articles/new">
+                    <PlusIcon className="h-4 w-4 mr-2" />
+                    New Article
+                  </Link>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Course Management */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-xl">Course Management</CardTitle>
+                <Button asChild>
+                  <Link href="/courses/admin">
+                    <GraduationCap className="h-4 w-4 mr-2" />
+                    Manage Courses
+                  </Link>
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground mb-4">
+                Create and manage educational courses with video modules for your audience.
+              </p>
+              <div className="flex gap-2">
+                <Button asChild variant="outline" size="sm">
+                  <Link href="/courses/admin">
+                    <GraduationCap className="h-4 w-4 mr-2" />
+                    Create Course
+                  </Link>
+                </Button>
+                <Button asChild variant="outline" size="sm">
+                  <Link href="/courses">
+                    View Courses
+                  </Link>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Articles Table */}
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle className="text-xl">Article Management</CardTitle>
-              <Button asChild>
+              <CardTitle className="text-xl">Recent Articles</CardTitle>
+              <Button asChild variant="outline">
                 <Link href="/admin/articles/new">
                   <PlusIcon className="h-4 w-4 mr-2" />
                   New Article

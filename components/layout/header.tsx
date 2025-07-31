@@ -6,7 +6,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
@@ -21,11 +21,11 @@ import { useTheme } from 'next-themes';
 const navigation = [
   { name: 'Home', href: '/' },
   { name: 'Politics', href: '/category/politics' },
-  { name: 'Technology', href: '/category/technology' },
-  { name: 'Business', href: '/category/business' },
-  { name: 'Sports', href: '/category/sports' },
-  { name: 'Entertainment', href: '/category/entertainment' },
+  { name: 'Minority News', href: '/category/minority-news' },
+  { name: 'Local News', href: '/category/local-news' },
+  { name: 'Feminist', href: '/category/feminist' },
   { name: 'Fact Check', href: '/fact-check' },
+  { name: 'Courses', href: '/courses' },
 ];
 
 export function Header() {
@@ -40,7 +40,11 @@ export function Header() {
     router.refresh();
   };
 
-  const logoSrc = theme === 'dark' ? '/logo-dark.png' : '/logo.png';
+  const [logoSrc, setLogoSrc] = useState('/logo.png');
+
+  useEffect(() => {
+    setLogoSrc(theme === 'dark' ? '/logo-dark.png' : '/logo.png');
+  }, [theme]);
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -88,12 +92,6 @@ export function Header() {
               <Search className="h-5 w-5" />
             </Button>
             <ThemeToggle />
-            <div className="hidden md:flex space-x-2">
-              <Button variant="ghost" onClick={() => router.push('/auth/sign-in')}>
-                Sign In
-              </Button>
-              <Button onClick={() => router.push('/auth/sign-up')}>Sign Up</Button>
-            </div>
             <Button
               variant="ghost"
               size="icon"
@@ -128,27 +126,6 @@ export function Header() {
                 {item.name}
               </Link>
             ))}
-            <div className="mt-4 space-y-2">
-              <Button
-                variant="ghost"
-                className="w-full"
-                onClick={() => {
-                  router.push('/auth/sign-in');
-                  setIsOpen(false);
-                }}
-              >
-                Sign In
-              </Button>
-              <Button
-                className="w-full"
-                onClick={() => {
-                  router.push('/auth/sign-up');
-                  setIsOpen(false);
-                }}
-              >
-                Sign Up
-              </Button>
-            </div>
           </div>
         )}
       </nav>

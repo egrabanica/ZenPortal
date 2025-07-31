@@ -47,6 +47,7 @@ async function ArticleData({ slug }: { slug: string }) {
               alt={article.title}
               className="object-cover"
               priority
+              mediaType={article.media_type}
             />
           </div>
         )}

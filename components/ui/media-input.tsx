@@ -5,7 +5,8 @@ import { Input } from './input';
 import { Label } from './label';
 import { Button } from './button';
 import { cn } from '@/lib/utils';
-import { UploadCloud, Link, Trash2 } from 'lucide-react';
+import { UploadCloud, Link, Trash2, FileVideo, File } from 'lucide-react';
+import { isVideoFile, isImageFile } from '@/lib/media-utils';
 
 export interface MediaInputProps {
   onFileChange: (file: File | null) => void;
@@ -54,11 +55,22 @@ export function MediaInput({
       {(preview || url) && (
         <div className="relative group">
           <div className="rounded-lg overflow-hidden border border-dashed border-gray-300 dark:border-gray-700 p-2">
-            {preview && file?.type.startsWith('image') && (
+            {preview && file && isImageFile(file) && (
               <img src={preview} alt="Preview" className="max-h-48 rounded-md mx-auto" />
             )}
-            {preview && file?.type.startsWith('video') && (
+            {preview && file && isVideoFile(file) && (
               <video src={preview} controls className="max-h-48 rounded-md mx-auto" />
+            )}
+            {preview && file && !isImageFile(file) && !isVideoFile(file) && (
+              <div className="text-center py-8">
+                <File className="mx-auto h-12 w-12 text-gray-400 mb-2" />
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  {file.name}
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                  File type: {file.type || 'Unknown'}
+                </p>
+              </div>
             )}
             {url && !preview && (
               <div className="text-center py-4">
@@ -101,12 +113,12 @@ export function MediaInput({
                     type="file"
                     id="file-upload"
                     onChange={(e) => onFileChange(e.target.files?.[0] || null)}
-                    accept=".jpg, .jpeg, .png, .webp, .gif, .mp4, .mov, .avi, .webm"
+                    accept="image/*,video/*"
                     className="sr-only"
                   />
                   <span className="text-sm text-blue-500 hover:underline">Select a file</span>
                 </label>
-                <p className="text-xs text-muted-foreground mt-2">Support formats: JPG, PNG, WEBP, GIF, MP4, MOV, AVI, WEBM (max 20MB)</p>
+                <p className="text-xs text-muted-foreground mt-2">Supports all image formats (max 50MB) and video formats (max 500MB)</p>
               </div>
             ) : (
               <div className="space-y-2">

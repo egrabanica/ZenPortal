@@ -9,10 +9,12 @@ export async function middleware(req: NextRequest) {
 
   // Check if the route is an admin route
   if (req.nextUrl.pathname.startsWith('/admin')) {
-    // Allow access to signin and signup pages
+    // Allow access to signin and signup pages without any checks
     if (
       req.nextUrl.pathname === '/admin/signin' ||
-      req.nextUrl.pathname === '/admin/signup'
+      req.nextUrl.pathname === '/admin/signup' ||
+      req.nextUrl.pathname.startsWith('/admin/signin/') ||
+      req.nextUrl.pathname.startsWith('/admin/signup/')
     ) {
       return res;
     }

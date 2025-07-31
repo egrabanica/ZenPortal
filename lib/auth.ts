@@ -92,8 +92,15 @@ export class AuthService {
 
   // Sign out user
   static async signOut() {
-    const { error } = await supabase.auth.signOut();
+    const { error } = await supabase.auth.signOut({ scope: 'global' });
     if (error) throw error;
+    
+    // Clear any cached data
+    if (typeof window !== 'undefined') {
+      // Clear any local storage or session storage if used
+      localStorage.clear();
+      sessionStorage.clear();
+    }
   }
 
   // Check authentication and admin status

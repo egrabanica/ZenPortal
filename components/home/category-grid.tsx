@@ -5,21 +5,21 @@
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
-  Briefcase, 
-  Film, 
   Globe2, 
-  Laptop2, 
-  Medal, 
-  Microscope 
+  Users, 
+  MapPin, 
+  Heart, 
+  CheckCircle, 
+  GraduationCap 
 } from 'lucide-react';
 
 const categories = [
   { name: 'Politics', icon: Globe2, href: '/category/politics', color: 'text-blue-500' },
-  { name: 'Technology', icon: Laptop2, href: '/category/technology', color: 'text-purple-500' },
-  { name: 'Business', icon: Briefcase, href: '/category/business', color: 'text-green-500' },
-  { name: 'Sports', icon: Medal, href: '/category/sports', color: 'text-red-500' },
-  { name: 'Entertainment', icon: Film, href: '/category/entertainment', color: 'text-yellow-500' },
-  { name: 'Science', icon: Microscope, href: '/category/science', color: 'text-cyan-500' },
+  { name: 'Minority News', icon: Users, href: '/category/minority-news', color: 'text-purple-500' },
+  { name: 'Local News', icon: MapPin, href: '/category/local-news', color: 'text-green-500' },
+  { name: 'Feminist', icon: Heart, href: '/category/feminist', color: 'text-pink-500' },
+  { name: 'Fact Check', icon: CheckCircle, href: '/fact-check', color: 'text-red-500' },
+  { name: 'Courses', icon: GraduationCap, href: '/courses', color: 'text-cyan-500' },
 ];
 
 export function CategoryGrid() {

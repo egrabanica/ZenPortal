@@ -29,9 +29,10 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
           // Customize blockquote rendering
           blockquote: ({node, ...props}) => <blockquote className="border-l-4 border-muted-foreground pl-4 italic my-4" {...props} />,
           // Customize code block rendering
-          code: ({node, inline, className, children, ...props}) => {
+          code: ({node, className, children, ...props}: any) => {
+            const inline = !(props as any).inline;
             const match = /language-(\\w+)/.exec(className || '');
-            return !inline && match ? (
+            return inline && match ? (
               <div className="bg-muted p-4 rounded-md my-4 overflow-x-auto">
                 <code className={className} {...props}>
                   {children}

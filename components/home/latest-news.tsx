@@ -16,12 +16,19 @@ async function LatestNewsData() {
           <Link href={`/article/${article.slug}`}>
             <div className="grid gap-4 md:grid-cols-2">
               <div className="relative aspect-video overflow-hidden rounded-lg">
-                <Image
-                  src={article.media_url || 'https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?auto=format&fit=crop&q=80'}
-                  alt={article.title}
-                  fill
-                  className="object-cover transition-transform group-hover:scale-105"
-                />
+                {article.media_type === 'video' ? (
+                  <video controls className="w-full h-full object-cover rounded-lg">
+                    <source src={article.media_url} type="video/mp4" />
+                    Your browser does not support the video tag.
+                  </video>
+                ) : (
+                  <Image
+                    src={article.media_url || 'https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?auto=format&fit=crop&q=80'}
+                    alt={article.title}
+                    fill
+                    className="object-cover transition-transform group-hover:scale-105"
+                  />
+                )}
               </div>
               <div className="space-y-3">
                 <Badge>{article.categories[0]}</Badge>

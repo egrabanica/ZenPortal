@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { getMediaTypeFromFile, getMediaTypeFromUrl } from '@/lib/media-utils';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -30,6 +31,7 @@ export default function NewArticle() {
   const [categories, setCategories] = useState<string[]>([]);
   const [mediaUrl, setMediaUrl] = useState('');
   const [mediaFile, setMediaFile] = useState<File | null>(null);
+  const [authorName, setAuthorName] = useState('');
   const [loading, setLoading] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [publishStatus, setPublishStatus] = useState<'draft' | 'published'>('draft');
@@ -40,18 +42,20 @@ export default function NewArticle() {
   useEffect(() => {
     const checkAdminAccess = async () => {
       try {
-        const isAdminUser = await AuthService.isAdmin();
-        if (!isAdminUser) {
-          toast({
-            title: 'Access Denied',
-            description: 'You must be an admin to access this page.',
-            variant: 'destructive',
-          });
-          router.push('/admin/signin');
-          return;
-        }
+        const adminProfile = await AuthService.requireAdmin();
         setIsAdmin(true);
-      } catch (error) {
+        // Set default author name from the logged-in admin's profile
+        if (adminProfile.full_name) {
+          setAuthorName(adminProfile.full_name);
+        } else {
+          setAuthorName(adminProfile.email);
+        }
+      } catch (error: any) {
+        toast({
+          title: 'Access Denied',
+          description: error.message || 'You must be an admin to access this page.',
+          variant: 'destructive',
+        });
         router.push('/admin/signin');
       }
     };
@@ -103,6 +107,15 @@ export default function NewArticle() {
       return;
     }
 
+    if (!authorName.trim()) {
+      toast({
+        title: 'Validation Error',
+        description: 'Author name is required.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -118,7 +131,7 @@ export default function NewArticle() {
       if (mediaFile) {
         try {
           finalMediaUrl = await StorageService.uploadFile(mediaFile);
-          mediaType = mediaFile.type.startsWith('image') ? 'image' : 'video';
+          mediaType = getMediaTypeFromFile(mediaFile);
         } catch (uploadError: any) {
           toast({
             title: 'Upload Error',
@@ -129,12 +142,7 @@ export default function NewArticle() {
         }
       } else if (mediaUrl) {
         // Determine media type from URL
-        const urlLower = mediaUrl.toLowerCase();
-        if (urlLower.includes('.mp4') || urlLower.includes('.mov') || urlLower.includes('video')) {
-          mediaType = 'video';
-        } else {
-          mediaType = 'image';
-        }
+        mediaType = getMediaTypeFromUrl(mediaUrl);
       }
 
       const newArticle = {
@@ -146,6 +154,7 @@ export default function NewArticle() {
         slug,
         excerpt,
         author_id: adminProfile.id,
+        author_name: authorName,
         status: publishStatus,
       };
 
@@ -196,13 +205,15 @@ export default function NewArticle() {
           </CardHeader>
           <CardContent>
             <div className="space-y-6">
-              <Input
-                label="Title"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="Enter article title"
-                required
-              />
+              <div className="space-y-2">
+                <Label>Title</Label>
+                <Input
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="Enter article title"
+                  required
+                />
+              </div>
 
               <RichEditor
                 label="Content"
@@ -226,6 +237,16 @@ export default function NewArticle() {
                 onChange={setCategories}
                 placeholder="Select categories..."
               />
+
+              <div className="space-y-2">
+                <Label>Author</Label>
+                <Input
+                  value={authorName}
+                  onChange={(e) => setAuthorName(e.target.value)}
+                  placeholder="Enter author name"
+                  required
+                />
+              </div>
 
               <div className="space-y-2">
                 <Label>Status</Label>

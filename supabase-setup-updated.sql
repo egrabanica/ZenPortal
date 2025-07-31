@@ -38,6 +38,13 @@ CREATE INDEX IF NOT EXISTS articles_published_at_idx ON articles(published_at DE
 ALTER TABLE articles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 
+-- Drop existing policies first, then recreate them
+DROP POLICY IF EXISTS "Articles are viewable by everyone" ON articles;
+DROP POLICY IF EXISTS "Admins can do everything with articles" ON articles;
+DROP POLICY IF EXISTS "Profiles are viewable by owner" ON profiles;
+DROP POLICY IF EXISTS "Profiles can be updated by owner" ON profiles;
+DROP POLICY IF EXISTS "Profiles can be inserted by owner" ON profiles;
+
 -- Create policies for articles
 CREATE POLICY "Articles are viewable by everyone" ON articles
   FOR SELECT USING (status = 'published');
@@ -69,7 +76,7 @@ BEGIN
   VALUES (
     NEW.id,
     NEW.email,
-    NEW.raw_user_meta_data->>'full_name',
+    NEW.raw_user_meta_data ->> 'full_name',
     CASE 
       WHEN NEW.email LIKE '%@admin.%' THEN 'admin'
       ELSE 'user'
@@ -135,6 +142,14 @@ CREATE INDEX IF NOT EXISTS course_videos_module_id_idx ON course_videos(module_i
 ALTER TABLE courses ENABLE ROW LEVEL SECURITY;
 ALTER TABLE course_modules ENABLE ROW LEVEL SECURITY;
 ALTER TABLE course_videos ENABLE ROW LEVEL SECURITY;
+
+-- Drop existing course policies first, then recreate them
+DROP POLICY IF EXISTS "Courses are viewable by everyone" ON courses;
+DROP POLICY IF EXISTS "Admins can manage courses" ON courses;
+DROP POLICY IF EXISTS "Course modules are viewable by everyone" ON course_modules;
+DROP POLICY IF EXISTS "Admins can manage course modules" ON course_modules;
+DROP POLICY IF EXISTS "Course videos are viewable by everyone" ON course_videos;
+DROP POLICY IF EXISTS "Admins can manage course videos" ON course_videos;
 
 -- Create policies for courses
 CREATE POLICY "Courses are viewable by everyone" ON courses

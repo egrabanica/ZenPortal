@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { getMediaTypeFromFile, getMediaTypeFromUrl } from '@/lib/media-utils';
 import { useRouter, useParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -31,6 +32,7 @@ export default function EditArticle() {
   const [categories, setCategories] = useState<string[]>([]);
   const [mediaUrl, setMediaUrl] = useState('');
   const [mediaFile, setMediaFile] = useState<File | null>(null);
+  const [authorName, setAuthorName] = useState('');
   const [loading, setLoading] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [publishStatus, setPublishStatus] = useState<'draft' | 'published'>('draft');
@@ -41,6 +43,10 @@ export default function EditArticle() {
   useEffect(() => {
     const fetchArticle = async () => {
       try {
+        // First check admin access
+        await AuthService.requireAdmin();
+        setIsAdmin(true);
+        
         const fetchedArticle = await ArticleService.getArticleById(id as string);
         if (fetchedArticle) {
           setArticle(fetchedArticle);
@@ -48,14 +54,21 @@ export default function EditArticle() {
           setContent(fetchedArticle.content);
           setCategories(fetchedArticle.categories);
           setMediaUrl(fetchedArticle.media_url || '');
+          setAuthorName(fetchedArticle.author_name || '');
           setPublishStatus(fetchedArticle.status as any);
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error('Failed to fetch article', error);
+        toast({
+          title: 'Access Denied',
+          description: error.message || 'You must be an admin to access this page.',
+          variant: 'destructive',
+        });
+        router.push('/admin/signin');
       }
     };
     fetchArticle();
-  }, [id]);
+  }, [id, router, toast]);
 
   const handleSave = async () => {
     if (!article) return;
@@ -77,7 +90,8 @@ export default function EditArticle() {
         content,
         categories,
         media_url: finalMediaUrl,
-        media_type: mediaFile?.type.startsWith('image') ? 'image' : 'video',
+        media_type: mediaFile ? getMediaTypeFromFile(mediaFile) : (mediaUrl ? getMediaTypeFromUrl(mediaUrl) : null),
+        author_name: authorName,
         slug,
         excerpt,
         status: publishStatus,
@@ -144,6 +158,15 @@ export default function EditArticle() {
                 selected={categories}
                 onChange={setCategories}
               />
+
+              <div className="space-y-2">
+                <Label>Author</Label>
+                <Input
+                  value={authorName}
+                  onChange={(e) => setAuthorName(e.target.value)}
+                  placeholder="Enter author name"
+                />
+              </div>
 
               <div className="space-y-2">
                 <Label>Status</Label>

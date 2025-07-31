@@ -37,8 +37,8 @@ export default function AdminSignIn() {
         description: 'Welcome to the admin dashboard!',
       });
 
-      router.push('/admin/dashboard');
-      router.refresh();
+      // Use window.location for a clean redirect
+      window.location.href = '/admin/dashboard';
     } catch (error: any) {
       toast({
         title: 'Error',

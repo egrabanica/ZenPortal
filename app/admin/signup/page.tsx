@@ -49,7 +49,7 @@ export default function AdminSignUp() {
     try {
       validateForm();
       
-      const { data } = await AuthService.signUpAdmin(
+      const data = await AuthService.signUpAdmin(
         formData.email,
         formData.password,
         formData.fullName
