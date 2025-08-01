@@ -36,7 +36,15 @@ export function LatestNewsClient({ initialArticles }: LatestNewsClientProps) {
   };
 
   return (
-    <div className="space-y-8">
+    <section aria-labelledby="latest-heading">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            🕒 Latest News
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-8">
       {articles.map((article: Article) => (
         <article key={article.id} className="group relative">
           <Link href={`/article/${article.slug}`}>
@@ -131,6 +139,9 @@ export function LatestNewsClient({ initialArticles }: LatestNewsClientProps) {
           )}
         </article>
       ))}
-    </div>
+          </div>
+        </CardContent>
+      </Card>
+    </section>
   );
 }
