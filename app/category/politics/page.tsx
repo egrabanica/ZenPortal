@@ -1,153 +1,136 @@
-'use client';
-
-import { useState, useEffect } from 'react';
+import { Suspense } from 'react';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Globe2, Vote, Scale, Users } from 'lucide-react';
 import Link from 'next/link';
-import { Clock, User, Globe2 } from 'lucide-react';
-import { ArticleImage } from '@/components/ui/article-image';
-import { Article } from '@/lib/database.types';
+import { CategoryPageClient } from '@/components/category/category-page-client';
 
-export default function PoliticsPage() {
-  const [articles, setArticles] = useState<Article[]>([]);
-  const [loading, setLoading] = useState(true);
+// Metadata for the page
+export const metadata = {
+  title: 'Politics - ZE News',
+  description: 'Stay informed with the latest political news, analysis, and developments from local to international levels.',
+  keywords: 'politics, elections, government, policy, political analysis, voting, democracy',
+};
 
-  useEffect(() => {
-    const fetchPoliticsArticles = async () => {
-      try {
-        const response = await fetch('/api/articles?category=politics');
-        if (!response.ok) {
-          throw new Error('Failed to fetch articles');
-        }
-        const data = await response.json();
-        setArticles(data);
-      } catch (error) {
-        console.error('Error fetching politics articles:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchPoliticsArticles();
-  }, []);
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-  };
-
-  if (loading) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="animate-pulse space-y-6">
-          <div className="h-8 bg-muted rounded w-1/4"></div>
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {[...Array(6)].map((_, i) => (
-              <div key={i} className="h-80 bg-muted rounded"></div>
-            ))}
+function CategoryHeader() {
+  return (
+    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 py-12">
+      <div className="container mx-auto px-4">
+        <div className="max-w-4xl mx-auto text-center">
+          <div className="flex items-center justify-center mb-4">
+            <Globe2 className="h-12 w-12 text-blue-600 mr-3" />
+            <h1 className="text-4xl md:text-5xl font-bold text-foreground">
+              Politics
+            </h1>
+          </div>
+          <p className="text-xl text-muted-foreground mb-6">
+            Stay informed with the latest political news, analysis, and developments 
+            from local to international levels.
+          </p>
+          <div className="flex flex-wrap justify-center gap-2">
+            <Badge variant="secondary" className="flex items-center gap-1">
+              <Vote className="h-3 w-3" />
+              Elections
+            </Badge>
+            <Badge variant="outline" className="flex items-center gap-1">
+              <Scale className="h-3 w-3" />
+              Policy
+            </Badge>
+            <Badge variant="outline" className="flex items-center gap-1">
+              <Users className="h-3 w-3" />
+              Government
+            </Badge>
           </div>
         </div>
       </div>
-    );
-  }
+    </div>
+  );
+}
 
+function LoadingSkeleton() {
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <div className="flex items-center gap-3 mb-4">
-          <Globe2 className="h-8 w-8 text-blue-500" />
-          <h1 className="text-4xl font-bold">Politics</h1>
-        </div>
-        <p className="text-lg text-muted-foreground">
-          Stay informed with the latest political news, analysis, and developments from local to international levels.
-        </p>
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <Card key={i}>
+            <CardHeader>
+              <Skeleton className="h-4 w-20 mb-2" />
+              <Skeleton className="h-6 w-full" />
+            </CardHeader>
+            <CardContent>
+              <Skeleton className="h-4 w-full mb-2" />
+              <Skeleton className="h-4 w-3/4" />
+            </CardContent>
+          </Card>
+        ))}
       </div>
+    </div>
+  );
+}
 
-      {articles.length === 0 ? (
-        <Card>
-          <CardContent className="text-center py-12">
-            <Globe2 className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
-            <h3 className="text-lg font-semibold mb-2">No Politics Articles Yet</h3>
-            <p className="text-muted-foreground">
-              Check back soon for the latest political news and analysis.
-            </p>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {articles.map((article) => (
-            <Card key={article.id} className="h-full hover:shadow-lg transition-shadow">
-              <div className="relative">
-                {article.media_url && (
-                  <ArticleImage
-                    src={article.media_url}
-                    alt={article.title}
-                    className="w-full h-48 object-cover rounded-t-lg"
-                  />
-                )}
-              </div>
-              <CardHeader className="pb-3">
-                <div className="flex items-center gap-2 mb-2">
-                  <Badge variant="outline" className="text-blue-600 border-blue-200">
-                    Politics
-                  </Badge>
-                  {article.categories
-                    .filter(cat => cat !== 'politics')
-                    .slice(0, 2)
-                    .map((category) => (
-                      <Badge key={category} variant="secondary" className="text-xs">
-                        {category}
-                      </Badge>
-                    ))}
-                </div>
-                <CardTitle className="line-clamp-2">
-                  <Link 
-                    href={`/article/${article.slug}`} 
-                    className="hover:text-blue-600 transition-colors"
-                  >
-                    {article.title}
-                  </Link>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="text-muted-foreground line-clamp-3 text-sm">
-                  {article.excerpt}
-                </p>
-                
-                <div className="flex items-center justify-between text-sm text-muted-foreground">
-                  <div className="flex items-center gap-1">
-                    <User className="h-4 w-4" />
-                    <span>{article.author_name || 'ZenNews'}</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Clock className="h-4 w-4" />
-                    <span>{formatDate(article.created_at)}</span>
-                  </div>
-                </div>
-
-                <Link 
-                  href={`/article/${article.slug}`}
-                  className="inline-block text-blue-600 hover:text-blue-800 font-medium text-sm transition-colors"
-                >
-                  Read Full Article →
-                </Link>
-              </CardContent>
-            </Card>
-          ))}
+export default function PoliticsPage() {
+  return (
+    <div className="min-h-screen bg-background">
+      <CategoryHeader />
+      
+      <div className="container mx-auto px-4 py-8">
+        <div className="mb-8">
+          <Card className="bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800">
+            <CardContent className="pt-6">
+              <h2 className="text-lg font-semibold mb-2 flex items-center gap-2">
+                <Globe2 className="h-5 w-5 text-blue-600" />
+                Political Coverage
+              </h2>
+              <p className="text-muted-foreground mb-4">
+                From local elections to international affairs, we provide comprehensive 
+                political analysis and breaking news coverage.
+              </p>
+            </CardContent>
+          </Card>
         </div>
-      )}
 
-      <div className="mt-12 text-center">
-        <h2 className="text-2xl font-bold mb-4">Political Categories</h2>
-        <div className="flex flex-wrap justify-center gap-3">
-          <Badge variant="outline" className="px-4 py-2">Local Politics</Badge>
-          <Badge variant="outline" className="px-4 py-2">National Politics</Badge>
-          <Badge variant="outline" className="px-4 py-2">International</Badge>
-          <Badge variant="outline" className="px-4 py-2">Elections</Badge>
-          <Badge variant="outline" className="px-4 py-2">Policy</Badge>
+        <Suspense fallback={<LoadingSkeleton />}>
+          <CategoryPageClient category="politics" />
+        </Suspense>
+
+        <div className="mt-12 text-center">
+          <Card className="bg-muted/50">
+            <CardContent className="pt-6">
+              <h3 className="text-lg font-semibold mb-2">Political Coverage Areas</h3>
+              <div className="grid md:grid-cols-4 gap-4 mt-4">
+                <div className="text-center">
+                  <div className="bg-blue-100 dark:bg-blue-900/30 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-2">
+                    <Vote className="h-6 w-6 text-blue-600" />
+                  </div>
+                  <h4 className="font-medium">Elections</h4>
+                  <p className="text-sm text-muted-foreground">Campaign coverage and election analysis</p>
+                </div>
+                <div className="text-center">
+                  <div className="bg-green-100 dark:bg-green-900/30 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-2">
+                    <Scale className="h-6 w-6 text-green-600" />
+                  </div>
+                  <h4 className="font-medium">Policy</h4>
+                  <p className="text-sm text-muted-foreground">Government policies and legislation</p>
+                </div>
+                <div className="text-center">
+                  <div className="bg-purple-100 dark:bg-purple-900/30 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-2">
+                    <Users className="h-6 w-6 text-purple-600" />
+                  </div>
+                  <h4 className="font-medium">Government</h4>
+                  <p className="text-sm text-muted-foreground">Government actions and decisions</p>
+                </div>
+                <div className="text-center">
+                  <div className="bg-orange-100 dark:bg-orange-900/30 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-2">
+                    <Globe2 className="h-6 w-6 text-orange-600" />
+                  </div>
+                  <h4 className="font-medium">International</h4>
+                  <p className="text-sm text-muted-foreground">Global politics and diplomacy</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>

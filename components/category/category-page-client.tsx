@@ -84,11 +84,11 @@ export function CategoryPageClient({ category }: CategoryPageClientProps) {
         <Link key={article.id} href={`/article/${article.slug}`}>
           <Card className="group hover:shadow-lg transition-all duration-200 overflow-hidden h-full">
             {article.media_url && (
-              <div className="aspect-video overflow-hidden">
+              <div className="relative aspect-video overflow-hidden bg-muted">
                 <ArticleImage
                   src={article.media_url}
                   alt={article.title}
-                  className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-200"
+                  className="group-hover:scale-105 transition-transform duration-200"
                   mediaType={article.media_type}
                 />
               </div>

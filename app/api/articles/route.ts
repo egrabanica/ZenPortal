@@ -1,4 +1,4 @@
-import { ArticleService } from '@/lib/articles';
+import { ArticleServerService as ArticleService } from '@/lib/articles-server';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
@@ -32,14 +32,28 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    // Check admin authorization using server-side auth
+    const { AuthServerService } = await import('@/lib/auth-server');
+    await AuthServerService.requireAdmin();
+    
     const articleData = await request.json();
+    console.log('📝 API: Creating article with categories:', articleData.categories);
+    
     const createdArticle = await ArticleService.createArticle(articleData);
+    
+    console.log('✅ API: Article created successfully:', {
+      id: createdArticle.id,
+      title: createdArticle.title,
+      categories: createdArticle.categories,
+      status: createdArticle.status
+    });
+    
     return NextResponse.json(createdArticle, { status: 201 });
   } catch (error: any) {
-    console.error('Error creating article:', error);
+    console.error('❌ Error creating article:', error);
     return NextResponse.json(
-      { error: 'Failed to create article' },
-      { status: 500 }
+      { error: error.message || 'Failed to create article' },
+      { status: error.message?.includes('Admin') ? 403 : 500 }
     );
   }
 }

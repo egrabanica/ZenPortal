@@ -1,7 +1,9 @@
 import { Suspense } from 'react';
 import { Hero } from '@/components/home/hero';
 import { TrendingNews } from '@/components/home/trending-news';
-import { LatestNews } from '@/components/home/latest-news';
+import { LatestNewsClient } from '@/components/home/latest-news-client';
+import { useEffect, useState } from 'react';
+import { ArticleService } from '@/lib/articles';
 import { CategoryGrid } from '@/components/home/category-grid';
 import { NewsletterCTA } from '@/components/home/newsletter-cta';
 import { Loading } from '@/components/ui/loading';
@@ -18,9 +20,9 @@ export default function Home() {
       </Suspense>
       <div className="grid lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2">
-          <Suspense fallback={<Loading />}>
-            <LatestNews />
-          </Suspense>
+<Suspense fallback={<Loading />}>
+          <LatestNewsClient initialArticles={initialArticles} />
+        </Suspense>
         </div>
         <aside className="space-y-8">
           <CategoryGrid />

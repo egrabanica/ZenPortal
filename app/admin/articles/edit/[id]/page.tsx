@@ -97,7 +97,28 @@ export default function EditArticle() {
         status: publishStatus,
       };
 
-      await ArticleService.updateArticle(article.id, updatedArticle);
+      console.log('🔄 Updating article via API:', {
+        id: article.id,
+        categories: updatedArticle.categories,
+        status: updatedArticle.status
+      });
+
+      // Use the API endpoint instead of direct service call
+      const response = await fetch(`/api/articles/${article.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedArticle),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to update article');
+      }
+
+      const result = await response.json();
+      console.log('✅ Article updated successfully via API:', result);
 
       toast({
         title: 'Success',
@@ -106,6 +127,7 @@ export default function EditArticle() {
 
       router.push('/admin/dashboard');
     } catch (error: any) {
+      console.error('❌ Error updating article:', error);
       toast({
         title: 'Error',
         description: error.message,

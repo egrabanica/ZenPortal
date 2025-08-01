@@ -69,10 +69,26 @@ export default function AdminDashboard() {
   }, [router, toast]);
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this article?')) return;
+    if (!confirm('Are you sure you want to delete this article? This action cannot be undone.')) return;
 
     try {
-      await ArticleService.deleteArticle(id);
+      console.log('🗑️ Deleting article via API:', id);
+      
+      // Use the API endpoint instead of direct service call
+      const response = await fetch(`/api/articles/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to delete article');
+      }
+
+      console.log('✅ Article deleted successfully via API');
+      
       // Refresh articles to get updated data
       const data = await ArticleService.getArticlesForAdmin();
       setArticles(data);
@@ -88,9 +104,10 @@ export default function AdminDashboard() {
       
       toast({
         title: 'Success',
-        description: 'Article archived successfully.',
+        description: 'Article deleted successfully.',
       });
     } catch (error: any) {
+      console.error('❌ Error deleting article:', error);
       toast({
         title: 'Error',
         description: error.message,

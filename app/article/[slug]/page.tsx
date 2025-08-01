@@ -41,11 +41,11 @@ async function ArticleData({ slug }: { slug: string }) {
         </div>
 
         {article.media_url && (
-          <div className="relative aspect-video overflow-hidden rounded-lg">
+          <div className="relative aspect-video overflow-hidden rounded-lg bg-muted">
             <ArticleImage
               src={article.media_url}
               alt={article.title}
-              className="object-cover"
+              className=""
               priority
               mediaType={article.media_type}
             />

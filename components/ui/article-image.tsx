@@ -49,10 +49,11 @@ export function ArticleImage({ src, alt, className, priority, mediaType }: Artic
       src={imgSrc}
       alt={alt}
       fill
-      className={className}
+      className={`object-cover ${className}`}
       priority={priority}
       onError={handleError}
       unoptimized // This bypasses Next.js image optimization for external URLs
+      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
     />
   );
 }

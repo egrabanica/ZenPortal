@@ -176,8 +176,24 @@ export default function NewArticle() {
         content: newArticle.content.substring(0, 100) + '...'
       });
 
-      const createdArticle = await ArticleService.createArticle(newArticle);
-      console.log('✅ Article created successfully:', createdArticle.id);
+      console.log('📝 Creating article via API...');
+      
+      // Use the API endpoint instead of direct service call
+      const response = await fetch('/api/articles', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newArticle),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to create article');
+      }
+
+      const createdArticle = await response.json();
+      console.log('✅ Article created successfully via API:', createdArticle.id);
 
       toast({
         title: 'Success',
