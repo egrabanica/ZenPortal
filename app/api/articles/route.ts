@@ -29,3 +29,38 @@ export async function GET(request: NextRequest) {
     );
   }
 }
+
+export async function POST(request: NextRequest) {
+  try {
+    const articleData = await request.json();
+    const createdArticle = await ArticleService.createArticle(articleData);
+    return NextResponse.json(createdArticle, { status: 201 });
+  } catch (error: any) {
+    console.error('Error creating article:', error);
+    return NextResponse.json(
+      { error: 'Failed to create article' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+    if (!id) {
+      return NextResponse.json(
+        { error: 'Article ID is required for deletion' },
+        { status: 400 }
+      );
+    }
+    await ArticleService.deleteArticle(id);
+    return NextResponse.json({ success: true });
+  } catch (error: any) {
+    console.error('Error deleting article:', error);
+    return NextResponse.json(
+      { error: 'Failed to delete article' },
+      { status: 500 }
+    );
+  }
+}
