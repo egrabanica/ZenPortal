@@ -85,6 +85,8 @@ export default function CourseManagementPage() {
   const [selectedModuleId, setSelectedModuleId] = useState<string | null>(null);
   const [newModule, setNewModule] = useState<NewModule>({ title: '', description: '' });
   const [newVideo, setNewVideo] = useState<NewVideo>({ title: '', description: '', video_url: '', duration: 0 });
+  const [isEditModuleDialogOpen, setIsEditModuleDialogOpen] = useState(false);
+  const [editingModule, setEditingModule] = useState<Module | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -312,6 +314,48 @@ export default function CourseManagementPage() {
     }
   };
 
+  const handleEditModule = (module: Module) => {
+    setEditingModule(module);
+    setIsEditModuleDialogOpen(true);
+  };
+
+  const handleUpdateModule = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingModule) return;
+
+    try {
+      const response = await fetch(`/api/courses/${courseId}/modules/${editingModule.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: editingModule.title,
+          description: editingModule.description,
+          order_index: editingModule.order_index,
+        }),
+      });
+
+      if (response.ok) {
+        toast({
+          title: 'Module Updated',
+          description: 'The module has been updated successfully.',
+        });
+        setIsEditModuleDialogOpen(false);
+        setEditingModule(null);
+        fetchModules();
+      } else {
+        throw new Error('Failed to update module');
+      }
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to update module. Please try again.',
+        variant: 'destructive',
+      });
+    }
+  };
+
   const openMaterialDialog = (moduleId: string) => {
     setSelectedMaterialModuleId(moduleId);
     setIsMaterialDialogOpen(true);
@@ -471,7 +515,15 @@ export default function CourseManagementPage() {
                     </div>
                   </div>
                 </AccordionTrigger>
-                <div className="px-4 py-2">
+                <div className="px-4 py-2 flex gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleEditModule(module)}
+                    className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950/20"
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
                   <Button
                     variant="ghost"
                     size="sm"
@@ -726,6 +778,59 @@ export default function CourseManagementPage() {
               </Button>
             </div>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Module Dialog */}
+      <Dialog open={isEditModuleDialogOpen} onOpenChange={setIsEditModuleDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Edit Module</DialogTitle>
+          </DialogHeader>
+          {editingModule && (
+            <form onSubmit={handleUpdateModule} className="space-y-4">
+              <div className="space-y-2">
+                <label htmlFor="edit-module-title" className="text-sm font-medium">
+                  Module Title
+                </label>
+                <Input
+                  id="edit-module-title"
+                  value={editingModule.title}
+                  onChange={(e) => setEditingModule({ ...editingModule, title: e.target.value })}
+                  placeholder="Enter module title"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label htmlFor="edit-module-description" className="text-sm font-medium">
+                  Description
+                </label>
+                <Textarea
+                  id="edit-module-description"
+                  value={editingModule.description}
+                  onChange={(e) => setEditingModule({ ...editingModule, description: e.target.value })}
+                  placeholder="Enter module description"
+                  required
+                  rows={3}
+                />
+              </div>
+
+              <div className="flex gap-2 pt-4">
+                <Button type="submit" className="flex-1">Update Module</Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setIsEditModuleDialogOpen(false);
+                    setEditingModule(null);
+                  }}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </form>
+          )}
         </DialogContent>
       </Dialog>
     </div>
