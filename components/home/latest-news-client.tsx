@@ -149,7 +149,19 @@ export function LatestNewsClient({ initialArticles }: LatestNewsClientProps) {
                   size="sm"
                   onClick={(e) => {
                     e.preventDefault();
-                    handlePublishToggle(article.id, article.status, onActionSuccess);
+                    handlePublishToggle(article.id, article.status, () => {
+                      const newStatus = article.status === 'published' ? 'draft' : 'published';
+                      if (newStatus === 'draft') {
+                        // If unpublishing, remove from published articles list
+                        setArticles((prev) => prev.filter(a => a.id !== article.id));
+                      } else {
+                        // If publishing, update the status in the local state
+                        setArticles((prev) => prev.map(a => 
+                          a.id === article.id ? { ...a, status: newStatus } : a
+                        ));
+                      }
+                      onActionSuccess();
+                    });
                   }}
                   title={article.status === 'published' ? 'Unpublish article' : 'Publish article'}
                 >
@@ -164,7 +176,11 @@ export function LatestNewsClient({ initialArticles }: LatestNewsClientProps) {
                   size="sm"
                   onClick={(e) => {
                     e.preventDefault();
-                    handleDuplicate(article.id, onActionSuccess);
+                    handleDuplicate(article.id, () => {
+                      // Don't add duplicated article to state since it's created as draft
+                      // Just refresh to maintain consistent state
+                      onActionSuccess();
+                    });
                   }}
                   title="Duplicate article"
                 >
@@ -175,7 +191,10 @@ export function LatestNewsClient({ initialArticles }: LatestNewsClientProps) {
                   size="sm"
                   onClick={(e) => {
                     e.preventDefault();
-                    handleDelete(article.id, onActionSuccess);
+                    handleDelete(article.id, () => {
+                      setArticles((prev) => prev.filter(a => a.id !== article.id));
+                      onActionSuccess();
+                    });
                   }}
                   className="text-red-600 hover:text-red-700 hover:bg-red-50"
                   title="Delete article"
