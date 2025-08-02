@@ -11,7 +11,7 @@ import { BannerAd } from '@/components/ads/banner-ad';
 import { SidebarAd } from '@/components/ads/sidebar-ad';
 
 export default async function Home() {
-  const initialArticles = await ArticleService.getLatestArticles(5);
+  const initialArticles = await ArticleService.getLatestArticles(10);
   return (
     <div className="container mx-auto px-4 py-8 space-y-12">
       <Hero />

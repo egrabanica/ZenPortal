@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Article } from '@/lib/database.types';
 import { useArticleActions } from '@/lib/hooks/use-article-actions';
-import { PencilIcon, TrashIcon, CopyIcon, EyeIcon, EyeOffIcon } from 'lucide-react';
+import { PencilIcon, TrashIcon, CopyIcon, EyeIcon, EyeOffIcon, Loader2 } from 'lucide-react';
 
 interface LatestNewsClientProps {
   initialArticles: Article[];
@@ -16,20 +16,68 @@ interface LatestNewsClientProps {
 
 export function LatestNewsClient({ initialArticles }: LatestNewsClientProps) {
   const [articles, setArticles] = useState<Article[]>(initialArticles);
+  const [loading, setLoading] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const observerRef = useRef<HTMLDivElement>(null);
   const { isAdmin, handleEdit, handleDelete, handlePublishToggle, handleDuplicate } = useArticleActions();
 
   const refreshArticles = async () => {
     try {
       // Refresh the articles list after any action
-      const response = await fetch('/api/articles/latest?limit=5');
+      const response = await fetch('/api/articles/latest?limit=10');
       if (response.ok) {
         const data = await response.json();
         setArticles(data);
+        setHasMore(data.length === 10);
       }
     } catch (error) {
       console.error('Failed to refresh articles:', error);
     }
   };
+
+  const loadMoreArticles = useCallback(async () => {
+    if (loading || !hasMore) return;
+    
+    setLoading(true);
+    try {
+      const response = await fetch(`/api/articles/latest?limit=10&offset=${articles.length}`);
+      if (response.ok) {
+        const newArticles = await response.json();
+        if (newArticles.length === 0) {
+          setHasMore(false);
+        } else {
+          setArticles(prev => [...prev, ...newArticles]);
+          setHasMore(newArticles.length === 10);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to load more articles:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [articles.length, loading, hasMore]);
+
+  // Intersection Observer for infinite scroll
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !loading) {
+          loadMoreArticles();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (observerRef.current) {
+      observer.observe(observerRef.current);
+    }
+
+    return () => {
+      if (observerRef.current) {
+        observer.unobserve(observerRef.current);
+      }
+    };
+  }, [loadMoreArticles, hasMore, loading]);
 
   const onActionSuccess = () => {
     refreshArticles();
@@ -140,6 +188,24 @@ export function LatestNewsClient({ initialArticles }: LatestNewsClientProps) {
         </article>
       ))}
           </div>
+          
+          {/* Loading indicator for infinite scroll */}
+          {loading && (
+            <div className="flex justify-center items-center py-4">
+              <Loader2 className="h-6 w-6 animate-spin" />
+              <span className="ml-2 text-muted-foreground">Loading more articles...</span>
+            </div>
+          )}
+          
+          {/* Intersection observer target */}
+          <div ref={observerRef} className="h-4" />
+          
+          {/* End of articles message */}
+          {!hasMore && articles.length > 0 && (
+            <div className="text-center py-4 text-muted-foreground">
+              You've reached the end of the articles.
+            </div>
+          )}
         </CardContent>
       </Card>
     </section>

@@ -148,8 +148,8 @@ export class ArticleServerService {
   }
 
   // Get latest articles (server-side)
-  static async getLatestArticles(limit: number = 10): Promise<Article[]> {
-    console.log(`📰 Fetching latest articles (limit: ${limit})`);
+  static async getLatestArticles(limit: number = 10, offset: number = 0): Promise<Article[]> {
+    console.log(`📰 Fetching latest articles (limit: ${limit}, offset: ${offset})`);
     
     const supabase = await this.getSupabaseClient();
 
@@ -158,7 +158,7 @@ export class ArticleServerService {
       .select('*')
       .eq('status', 'published')
       .order('published_at', { ascending: false })
-      .limit(limit);
+      .range(offset, offset + limit - 1);
 
     if (error) {
       console.error('❌ Error fetching latest articles:', error);

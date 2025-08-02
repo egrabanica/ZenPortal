@@ -5,8 +5,8 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const limit = parseInt(searchParams.get('limit') || '10');
-    
-    const articles = await ArticleServerService.getLatestArticles(limit);
+    const offset = parseInt(searchParams.get('offset') || '0');
+    const articles = await ArticleServerService.getLatestArticles(limit, offset);
     
     return NextResponse.json(articles);
   } catch (error: any) {
