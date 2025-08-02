@@ -2,13 +2,16 @@ import { Suspense } from 'react';
 import { Hero } from '@/components/home/hero';
 import { TrendingNews } from '@/components/home/trending-news';
 import { LatestNewsClient } from '@/components/home/latest-news-client';
-import { useEffect, useState } from 'react';
 import { ArticleService } from '@/lib/articles';
 import { CategoryGrid } from '@/components/home/category-grid';
 import { NewsletterCTA } from '@/components/home/newsletter-cta';
 import { Loading } from '@/components/ui/loading';
 import { BannerAd } from '@/components/ads/banner-ad';
 import { SidebarAd } from '@/components/ads/sidebar-ad';
+
+// Force dynamic rendering to prevent caching issues
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export default async function Home() {
   const initialArticles = await ArticleService.getLatestArticles(10);

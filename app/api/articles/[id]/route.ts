@@ -111,7 +111,14 @@ export async function DELETE(
     
     console.log('✅ Article deleted successfully:', id);
     
-    return NextResponse.json({ success: true, message: 'Article deleted successfully' });
+    const response = NextResponse.json({ success: true, message: 'Article deleted successfully' });
+    
+    // Add cache control headers to prevent caching
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    response.headers.set('Pragma', 'no-cache');
+    response.headers.set('Expires', '0');
+    
+    return response;
   } catch (error: any) {
     console.error('❌ Error deleting article:', error);
     return NextResponse.json(

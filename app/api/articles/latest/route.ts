@@ -8,7 +8,14 @@ export async function GET(request: NextRequest) {
     const offset = parseInt(searchParams.get('offset') || '0');
     const articles = await ArticleServerService.getLatestArticles(limit, offset);
     
-    return NextResponse.json(articles);
+    const response = NextResponse.json(articles);
+    
+    // Disable caching to ensure fresh data
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    response.headers.set('Pragma', 'no-cache');
+    response.headers.set('Expires', '0');
+    
+    return response;
   } catch (error: any) {
     console.error('Error fetching latest articles:', error);
     return NextResponse.json(
