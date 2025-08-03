@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Megaphone, Users, Vote, Calendar, Target } from 'lucide-react';
+import { Megaphone, BookOpen, SearchCheck, Pause, Target, Eye } from 'lucide-react';
 import Link from 'next/link';
 import { CategoryPageClient } from '@/components/category/category-page-client';
 
@@ -30,11 +30,11 @@ function CategoryHeader() {
           </p>
           <div className="flex flex-wrap justify-center gap-2">
             <Badge variant="secondary" className="flex items-center gap-1">
-              <Vote className="h-3 w-3" />
+              <SearchCheck className="h-3 w-3" />
               Fact-Checking
             </Badge>
             <Badge variant="outline" className="flex items-center gap-1">
-              <Users className="h-3 w-3" />
+              <BookOpen className="h-3 w-3" />
               Mindful Reading
             </Badge>
             <Badge variant="outline" className="flex items-center gap-1">
@@ -100,14 +100,14 @@ export default function TrendingPage() {
               <div className="grid md:grid-cols-4 gap-4 mt-4">
                 <div className="text-center">
                   <div className="bg-blue-100 dark:bg-blue-900/30 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-2">
-                    <Vote className="h-6 w-6 text-blue-600" />
+                    <SearchCheck className="h-6 w-6 text-blue-600" />
                   </div>
                   <h4 className="font-medium">Verify</h4>
                   <p className="text-sm text-muted-foreground">Fact-check headlines and identify misinformation.</p>
                 </div>
                 <div className="text-center">
                   <div className="bg-green-100 dark:bg-green-900/30 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-2">
-                    <Users className="h-6 w-6 text-green-600" />
+                    <Eye className="h-6 w-6 text-green-600" />
                   </div>
                   <h4 className="font-medium">Analyze</h4>
                   <p className="text-sm text-muted-foreground">Read articles critically to spot bias.</p>
@@ -121,7 +121,7 @@ export default function TrendingPage() {
                 </div>
                 <div className="text-center">
                   <div className="bg-orange-100 dark:bg-orange-900/30 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-2">
-                    <Calendar className="h-6 w-6 text-orange-600" />
+                    <Pause className="h-6 w-6 text-orange-600" />
                   </div>
                   <h4 className="font-medium">Reflect</h4>
                   <p className="text-sm text-muted-foreground">Pause and step back to avoid information overload.
