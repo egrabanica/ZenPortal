@@ -3,21 +3,16 @@ import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { BannerAd } from '@/components/ads/banner-ad';
-import { ArticleService } from '@/lib/articles';
+import { ArticleServerService } from '@/lib/articles-server';
 import { MarkdownRenderer } from '@/components/ui/markdown-renderer';
 import { MediaDisplay } from '@/components/ui/media-display';
 
-export async function generateStaticParams() {
-  // Fetch all published articles to generate static pages
-  const articles = await ArticleService.getLatestArticles(100); 
-
-  return articles.map((article) => ({
-    slug: article.slug,
-  }));
-}
+// Force dynamic rendering to prevent caching issues
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 async function ArticleData({ slug }: { slug: string }) {
-  const article = await ArticleService.getArticleBySlug(slug);
+  const article = await ArticleServerService.getArticleBySlug(slug);
 
   if (!article) {
     notFound();
