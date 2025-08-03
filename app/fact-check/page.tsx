@@ -18,13 +18,21 @@ export default function FactCheckPage() {
   });
   const [mediaUrl, setMediaUrl] = useState('');
   const [mediaFile, setMediaFile] = useState<File | null>(null);
+  const [uploadedMediaData, setUploadedMediaData] = useState<{
+    url: string;
+    filename: string;
+    size: number;
+    type: string;
+  } | null>(null);
   const { toast } = useToast();
 
 const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       let mediaInfo = '';
-      if (mediaFile) {
+      if (uploadedMediaData) {
+        mediaInfo = `\nUploaded Media: ${uploadedMediaData.filename} (${(uploadedMediaData.size / 1024 / 1024).toFixed(2)}MB)\nMedia URL: ${window.location.origin}${uploadedMediaData.url}`;
+      } else if (mediaFile) {
         mediaInfo = `\nMedia File: ${mediaFile.name} (${(mediaFile.size / 1024 / 1024).toFixed(2)}MB)`;
       } else if (mediaUrl) {
         mediaInfo = `\nMedia URL: ${mediaUrl}`;
@@ -56,6 +64,7 @@ const handleSubmit = async (e: React.FormEvent) => {
       setFormData({ title: '', url: '', description: '' });
       setMediaUrl('');
       setMediaFile(null);
+      setUploadedMediaData(null);
       
     } catch (error) {
       console.error('EmailJS error:', error);
@@ -87,7 +96,14 @@ const handleSubmit = async (e: React.FormEvent) => {
     // Clear file when URL is entered
     if (url) {
       setMediaFile(null);
+      setUploadedMediaData(null);
     }
+  };
+
+  const handleMediaUploaded = (mediaData: { url: string; filename: string; size: number; type: string }) => {
+    setUploadedMediaData(mediaData);
+    // Clear URL when file is uploaded
+    setMediaUrl('');
   };
 
   return (
@@ -157,6 +173,7 @@ const handleSubmit = async (e: React.FormEvent) => {
                 url={mediaUrl}
                 onFileChange={handleFileChange}
                 onUrlChange={handleUrlChange}
+                onMediaUploaded={handleMediaUploaded}
               />
 
               <Button type="submit" className="w-full">
