@@ -124,7 +124,9 @@ export default function TrendingPage() {
                     <Calendar className="h-6 w-6 text-orange-600" />
                   </div>
                   <h4 className="font-medium">Reflect</h4>
-                  <p className="text-sm text-muted-foreground">Pause and step back to avoid information overload.</p>
+                  <p className="text-sm text-muted-foreground">Pause and step back to avoid information overload.
+                    
+                  </p>
                 </div>
               </div>
             </CardContent>
