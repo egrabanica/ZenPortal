@@ -5,7 +5,7 @@ import { Card } from '@/components/ui/card';
 import { BannerAd } from '@/components/ads/banner-ad';
 import { ArticleService } from '@/lib/articles';
 import { MarkdownRenderer } from '@/components/ui/markdown-renderer';
-import { ArticleImage } from '@/components/ui/article-image';
+import { MediaDisplay } from '@/components/ui/media-display';
 
 export async function generateStaticParams() {
   // Fetch all published articles to generate static pages
@@ -42,12 +42,13 @@ async function ArticleData({ slug }: { slug: string }) {
 
         {article.media_url && (
           <div className="relative aspect-video overflow-hidden rounded-lg bg-muted">
-            <ArticleImage
+            <MediaDisplay
               src={article.media_url}
               alt={article.title}
-              className=""
+              className="w-full h-full"
               priority
               mediaType={article.media_type}
+              controls={true}
             />
           </div>
         )}

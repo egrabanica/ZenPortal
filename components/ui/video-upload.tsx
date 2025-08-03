@@ -23,7 +23,7 @@ interface VideoUploadProps {
 
 export function VideoUpload({
   onVideoUploaded,
-  maxSizeMB = 100,
+  maxSizeMB = 300,
   acceptedFormats = ['.mp4', '.mov', '.avi', '.mkv', '.webm'],
   className = ''
 }: VideoUploadProps) {
@@ -99,11 +99,22 @@ export function VideoUpload({
       clearInterval(uploadInterval);
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Upload failed');
+        let errorMessage = 'Upload failed';
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorMessage;
+        } catch (parseError) {
+          errorMessage = response.statusText || `HTTP ${response.status}`;
+        }
+        throw new Error(errorMessage);
       }
 
-      const result = await response.json();
+      let result;
+      try {
+        result = await response.json();
+      } catch (parseError) {
+        throw new Error('Invalid response from server');
+      }
       setUploadProgress(100);
 
       // Get video duration (if browser supports it)

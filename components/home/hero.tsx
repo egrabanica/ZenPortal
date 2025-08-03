@@ -2,6 +2,8 @@
  *   Copyright (c) 2025 
  *   All rights reserved.
  */
+'use client';
+
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 
@@ -21,8 +23,16 @@ export function Hero() {
             Join our community of informed readers who value truth and transparency.
           </p>
           <div className="mt-10 flex items-center gap-x-6">
-            <Button asChild size="lg">
-              <Link href="/latest">Latest News</Link>
+            <Button 
+              size="lg"
+              onClick={() => {
+                const latestNewsSection = document.getElementById('latest-news-section');
+                if (latestNewsSection) {
+                  latestNewsSection.scrollIntoView({ behavior: 'smooth' });
+                }
+              }}
+            >
+              Latest News
             </Button>
             <Button variant="outline" size="lg" asChild>
               <Link href="/fact-check">Fact Check</Link>

@@ -117,8 +117,8 @@ export class ArticleServerService {
   }
 
   // Get published articles by category (server-side)
-  static async getPublishedArticlesByCategory(category: string): Promise<Article[]> {
-    console.log(`🔍 Fetching articles for category: '${category}'`);
+  static async getPublishedArticlesByCategory(category: string, limit: number = 50, offset: number = 0): Promise<Article[]> {
+    console.log(`🔍 Fetching articles for category: '${category}' (limit: ${limit}, offset: ${offset})`);
     
     const supabase = await this.getSupabaseClient();
 
@@ -127,14 +127,15 @@ export class ArticleServerService {
       .select('*')
       .eq('status', 'published')
       .contains('categories', [category])
-      .order('published_at', { ascending: false });
+      .order('published_at', { ascending: false })
+      .range(offset, offset + limit - 1);
 
     if (error) {
       console.error(`❌ Error fetching articles for category '${category}':`, error);
       throw error;
     }
     
-    console.log(`✅ Found ${data?.length || 0} articles for category '${category}':`, 
+    console.log(`✅ Found ${data?.length || 0} articles for category '${category}' (offset: ${offset}):`, 
       data?.map(a => ({
         id: a.id.substring(0, 8),
         title: a.title,
@@ -206,4 +207,29 @@ export class ArticleServerService {
       ? plainText.substring(0, maxLength).trim() + '...'
       : plainText;
   }
+
+  // Search articles (server-side)
+  static async searchArticles(query: string, limit: number = 10, offset: number = 0): Promise<Article[]> {
+    console.log(`🔍 Searching articles for query: "${query}" (limit: ${limit}, offset: ${offset})`);
+    
+    const supabase = await this.getSupabaseClient();
+
+    // Search in both title and content for better results
+    const { data, error } = await supabase
+      .from('articles')
+      .select('id, title, excerpt, slug, categories, published_at')
+      .or(`title.ilike.%${query}%,content.ilike.%${query}%,excerpt.ilike.%${query}%`)
+      .eq('status', 'published')
+      .order('published_at', { ascending: false })
+      .range(offset, offset + limit - 1);
+
+    if (error) {
+      console.error('❌ Error searching articles:', error);
+      throw error;
+    }
+
+    console.log(`✅ Found ${data?.length || 0} articles matching "${query}"`);
+    return data || [];
+  }
+
 }

@@ -12,6 +12,7 @@ import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/theme-toggle';
+import { SearchDialog } from '@/components/search/search-dialog';
 import { 
   Search, 
   Menu, 
@@ -23,7 +24,8 @@ import {
   Heart, 
   CheckCircle, 
   MessageSquare, 
-  GraduationCap 
+  GraduationCap,
+  Megaphone 
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
@@ -39,10 +41,12 @@ const iconMap = {
   CheckCircle,
   MessageSquare,
   GraduationCap,
+  Megaphone,
 };
 
 const navigation = [
   { name: 'Home', href: '/', icon: Home },
+  { name: 'Campaign', href: '/category/trending', icon: Megaphone },
   { name: 'Politics', href: '/category/politics', icon: Vote },
   { name: 'Minority News', href: '/category/minority-news', icon: Users },
   { name: 'Local News', href: '/category/local-news', icon: MapPin },
@@ -64,11 +68,14 @@ export function Header() {
     router.refresh();
   };
 
-  const [logoSrc, setLogoSrc] = useState('/logo.png');
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setLogoSrc(theme === 'dark' ? '/logo-dark.png' : '/logo.png');
-  }, [theme]);
+    setMounted(true);
+  }, []);
+
+  // Prevent hydration flash by not changing logo until mounted
+  const logoSrc = mounted && theme === 'dark' ? '/logo-dark.png' : '/logo.png';
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -107,14 +114,9 @@ export function Header() {
           </div>
 
           <div className="flex items-center space-x-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="hidden md:flex"
-              aria-label="Search"
-            >
-              <Search className="h-5 w-5" />
-            </Button>
+            <div className="hidden md:flex">
+              <SearchDialog />
+            </div>
             <ThemeToggle />
             <Button
               variant="ghost"
@@ -157,15 +159,19 @@ export function Header() {
               })}
             </div>
             <div className="mt-4 pt-4 border-t">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="w-full justify-start gap-3"
-                aria-label="Search"
-              >
-                <Search className="h-4 w-4" />
-                Search
-              </Button>
+              <SearchDialog 
+                trigger={
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="w-full justify-start gap-3"
+                    aria-label="Search"
+                  >
+                    <Search className="h-4 w-4" />
+                    Search
+                  </Button>
+                }
+              />
             </div>
           </div>
         )}

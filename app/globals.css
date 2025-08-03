@@ -78,5 +78,33 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-display: swap;
+  }
+  
+  /* Performance optimizations */
+  img, video {
+    height: auto;
+    max-width: 100%;
+  }
+  
+  /* Optimize loading states */
+  .loading {
+    opacity: 0.6;
+    transition: opacity 0.2s ease-in-out;
+  }
+  
+  /* Smooth scrolling */
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  /* Critical rendering optimizations */
+  * {
+    box-sizing: border-box;
+  }
+  
+  /* Prevent layout shift */
+  .aspect-video {
+    contain: layout;
   }
 }

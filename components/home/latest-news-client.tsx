@@ -108,7 +108,7 @@ export function LatestNewsClient({ initialArticles }: LatestNewsClientProps) {
                     src={article.media_url || 'https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?auto=format&fit=crop&q=80'}
                     alt={article.title}
                     fill
-                    className="object-cover transition-transform group-hover:scale-105"
+                    className="object-contain transition-transform group-hover:scale-105"
                   />
                 )}
               </div>

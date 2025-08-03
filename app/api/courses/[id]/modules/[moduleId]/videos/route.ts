@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
+import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
 
 export async function GET(
@@ -8,7 +8,7 @@ export async function GET(
 ) {
   try {
     const cookieStore = await cookies();
-    const supabase = createServerComponentClient({ cookies: () => cookieStore });
+    const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
     const { moduleId } = await params;
     
     const { data: videos, error } = await supabase
@@ -35,7 +35,7 @@ export async function POST(
 ) {
   try {
     const cookieStore = await cookies();
-    const supabase = createServerComponentClient({ cookies: () => cookieStore });
+    const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
     const { moduleId } = await params;
     
     // Check if user is authenticated

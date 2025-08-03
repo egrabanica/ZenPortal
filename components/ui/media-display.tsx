@@ -73,7 +73,7 @@ export function MediaDisplay({
           muted={isMuted}
           loop={loop}
           poster={poster}
-          className="w-full h-full object-cover rounded-lg"
+          className="w-full h-full object-contain rounded-lg"
           onPlay={() => setIsPlaying(true)}
           onPause={() => setIsPlaying(false)}
           onError={() => {
@@ -124,10 +124,11 @@ export function MediaDisplay({
       src={imgSrc}
       alt={alt}
       fill
-      className={className}
+      className={`object-contain ${className}`}
       priority={priority}
       onError={handleError}
       unoptimized // This bypasses Next.js image optimization for external URLs
+      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
     />
   );
 }

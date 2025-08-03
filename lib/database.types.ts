@@ -98,25 +98,25 @@ export type ProfileUpdate = Database['public']['Tables']['profiles']['Update'];
 // Simplified category structure - one category per section
 export const CATEGORIES = [
   'home',
+  'campaign',
   'politics', 
   'minority-news',
   'local-news',
   'feminist',
   'fact-check',
-  'factcheck-response',
-  'general'
+  'factcheck-response'
 ] as const;
 
 // Category labels for display
 export const CATEGORY_LABELS = {
   'home': 'Home',
+  'campaign': 'Campaign',
   'politics': 'Politics',
   'minority-news': 'Minority News', 
   'local-news': 'Local News',
   'feminist': 'Feminist',
   'fact-check': 'Fact Check',
-  'factcheck-response': 'FactCheck Response',
-  'general': 'General'
+  'factcheck-response': 'FactCheck Response'
 } as const;
 
 // Get all category options - simplified to just main categories

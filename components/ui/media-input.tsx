@@ -118,7 +118,7 @@ export function MediaInput({
                   />
                   <span className="text-sm text-blue-500 hover:underline">Select a file</span>
                 </label>
-                <p className="text-xs text-muted-foreground mt-2">Supports all image formats (max 50MB) and video formats (max 500MB)</p>
+                <p className="text-xs text-muted-foreground mt-2">Supports all image formats (max 50MB) and video formats (max 300MB)</p>
               </div>
             ) : (
               <div className="space-y-2">

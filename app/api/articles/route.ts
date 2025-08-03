@@ -5,22 +5,41 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const limit = searchParams.get('limit');
+    const offset = searchParams.get('offset');
     const category = searchParams.get('category');
+    const search = searchParams.get('search');
     const status = searchParams.get('status') || 'published';
 
     let articles;
 
-    if (category) {
-      articles = await ArticleService.getPublishedArticlesByCategory(category);
+    if (search) {
+      // Handle search functionality
+      const limitNum = limit ? parseInt(limit) : 10;
+      const offsetNum = offset ? parseInt(offset) : 0;
+      articles = await ArticleService.searchArticles(search, limitNum, offsetNum);
+    } else if (category) {
+      const limitNum = limit ? parseInt(limit) : 50;
+      const offsetNum = offset ? parseInt(offset) : 0;
+      
+      // All categories, including 'home', now require the specific category to be in the article's categories array
+      // This means articles will only appear on the homepage if they have 'home' in their categories
+      articles = await ArticleService.getPublishedArticlesByCategory(category, limitNum, offsetNum);
     } else {
       const limitNum = limit ? parseInt(limit) : 10;
-      articles = await ArticleService.getLatestArticles(limitNum);
+      const offsetNum = offset ? parseInt(offset) : 0;
+      articles = await ArticleService.getLatestArticles(limitNum, offsetNum);
     }
 
     // Filter by status if needed
     const filteredArticles = articles.filter(article => article.status === status);
 
-    return NextResponse.json(filteredArticles);
+    // Add cache control headers to prevent caching issues
+    const response = NextResponse.json(filteredArticles);
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    response.headers.set('Pragma', 'no-cache');
+    response.headers.set('Expires', '0');
+    
+    return response;
   } catch (error: any) {
     console.error('Error fetching articles:', error);
     return NextResponse.json(

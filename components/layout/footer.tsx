@@ -24,10 +24,10 @@ const navigation = {
     { name: 'Cookie Policy', href: '/cookies' },
   ],
   social: [
-    { name: 'Facebook', href: '#' },
-    { name: 'Twitter', href: '#' },
-    { name: 'Instagram', href: '#' },
-    { name: 'LinkedIn', href: '#' },
+    { name: 'Facebook', href: 'https://www.facebook.com/profile.php?id=61574516762758' },
+    { name: 'Twitter', href: 'https://twitter.com/zennews' },
+    { name: 'Instagram', href: 'https://instagram.com/zennews.ks' },
+    { name: 'LinkedIn', href: 'https://linkedin.com/company/zennews' },
   ],
 };
 
@@ -35,11 +35,18 @@ export function Footer() {
   const { theme } = useTheme();
   const [logoSrc, setLogoSrc] = useState('/logo.png');
   const [currentYear, setCurrentYear] = useState(2025);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setLogoSrc(theme === 'dark' ? '/logo-dark.png' : '/logo.png');
+    setMounted(true);
     setCurrentYear(new Date().getFullYear());
-  }, [theme]);
+  }, []);
+
+  useEffect(() => {
+    if (mounted) {
+      setLogoSrc(theme === 'dark' ? '/logo-dark.png' : '/logo.png');
+    }
+  }, [theme, mounted]);
 
   return (
     <footer className="bg-background border-t">
@@ -97,6 +104,8 @@ export function Footer() {
                 <li key={item.name}>
                   <Link
                     href={item.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="text-sm text-muted-foreground hover:text-foreground"
                   >
                     {item.name}

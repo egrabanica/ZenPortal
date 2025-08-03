@@ -6,27 +6,40 @@ import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
 import { Toaster } from '@/components/ui/toaster';
 
-const inter = Inter({ subsets: ['latin'] });
+const inter = Inter({ 
+  subsets: ['latin'],
+  display: 'swap',
+  preload: true,
+  fallback: ['system-ui', 'arial'],
+});
 
 export const metadata: Metadata = {
   title: {
-    default: 'NewsPortal - Trusted News & Fact Checking',
-    template: '%s | NewsPortal'
+    default: 'ZE News',
+    template: '%s | ZE News'
   },
   description: 'Get real-time news updates with integrated fact-checking and community verification.',
   keywords: ['news', 'fact-checking', 'journalism', 'real-time news', 'verified news'],
-  authors: [{ name: 'NewsPortal Team' }],
+  authors: [{ name: 'ZE News Team' }],
+  icons: {
+    icon: [
+      { url: '/logo.png', sizes: '32x32', type: 'image/png' },
+      { url: '/logo.png', sizes: '16x16', type: 'image/png' }
+    ],
+    apple: '/logo.png',
+    shortcut: '/logo.png',
+  },
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: 'https://newsportal.com',
-    siteName: 'NewsPortal',
-    title: 'NewsPortal - Trusted News & Fact Checking',
+    url: 'https://zenews.com',
+    siteName: 'ZE News',
+    title: 'ZE News - Trusted News & Fact Checking',
     description: 'Get real-time news updates with integrated fact-checking and community verification.',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'NewsPortal - Trusted News & Fact Checking',
+    title: 'ZE News - Trusted News & Fact Checking',
     description: 'Get real-time news updates with integrated fact-checking and community verification.',
   },
   robots: {

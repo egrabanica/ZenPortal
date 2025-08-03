@@ -10,10 +10,12 @@ import {
   MapPin, 
   Heart, 
   CheckCircle, 
-  GraduationCap 
+  GraduationCap,
+  Megaphone 
 } from 'lucide-react';
 
 const categories = [
+  { name: 'Campaign', icon: Megaphone, href: '/category/trending', color: 'text-blue-500' },
   { name: 'Politics', icon: Globe2, href: '/category/politics', color: 'text-blue-500' },
   { name: 'Minority News', icon: Users, href: '/category/minority-news', color: 'text-purple-500' },
   { name: 'Local News', icon: MapPin, href: '/category/local-news', color: 'text-green-500' },

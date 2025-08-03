@@ -49,7 +49,7 @@ export function ArticleImage({ src, alt, className, priority, mediaType }: Artic
       src={imgSrc}
       alt={alt}
       fill
-      className={`object-cover ${className}`}
+      className={`object-contain ${className}`}
       priority={priority}
       onError={handleError}
       unoptimized // This bypasses Next.js image optimization for external URLs

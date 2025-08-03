@@ -8,10 +8,12 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { VideoUpload } from '@/components/ui/video-upload';
+import { MediaInput } from '@/components/ui/media-input';
 import { FileInput } from '@/components/ui/file-input';
 import { DocumentUpload } from '@/components/ui/document-upload';
 import { useToast } from '@/hooks/use-toast';
+import { StorageService } from '@/lib/storage';
+import { isVideoFile } from '@/lib/media-utils';
 import { Plus, Edit, Trash2, PlayCircle, Clock, FileVideo } from 'lucide-react';
 import Link from 'next/link';
 
@@ -69,6 +71,7 @@ interface NewVideo {
   description: string;
   video_url: string;
   duration: number;
+  video_file: File | null;
 }
 
 export default function CourseManagementPage() {
@@ -84,7 +87,7 @@ export default function CourseManagementPage() {
   const [newMaterial, setNewMaterial] = useState<NewMaterial>({ title: '', description: '', material_url: '', material_type: 'other', file_size: 0 });
   const [selectedModuleId, setSelectedModuleId] = useState<string | null>(null);
   const [newModule, setNewModule] = useState<NewModule>({ title: '', description: '' });
-  const [newVideo, setNewVideo] = useState<NewVideo>({ title: '', description: '', video_url: '', duration: 0 });
+  const [newVideo, setNewVideo] = useState<NewVideo>({ title: '', description: '', video_url: '', duration: 0, video_file: null });
   const [isEditModuleDialogOpen, setIsEditModuleDialogOpen] = useState(false);
   const [editingModule, setEditingModule] = useState<Module | null>(null);
   const { toast } = useToast();
@@ -156,11 +159,19 @@ export default function CourseManagementPage() {
     }
   };
 
-  const handleVideoUploaded = (videoData: { url: string; filename: string; size: number; duration?: number }) => {
+  const handleVideoFileChange = (file: File | null) => {
     setNewVideo(prev => ({
       ...prev,
-      video_url: videoData.url,
-      duration: videoData.duration || 0
+      video_file: file,
+      video_url: file ? '' : prev.video_url // Clear URL if file is selected
+    }));
+  };
+
+  const handleVideoUrlChange = (url: string) => {
+    setNewVideo(prev => ({
+      ...prev,
+      video_url: url,
+      video_file: url ? null : prev.video_file // Clear file if URL is entered
     }));
   };
 
@@ -235,10 +246,10 @@ export default function CourseManagementPage() {
       return;
     }
 
-    if (!newVideo.video_url.trim()) {
+    if (!newVideo.video_url.trim() && !newVideo.video_file) {
       toast({
         title: 'Error',
-        description: 'Video URL is required.',
+        description: 'Please provide either a video file or video URL.',
         variant: 'destructive',
       });
       return;
@@ -251,13 +262,46 @@ export default function CourseManagementPage() {
     });
 
     try {
+      let finalVideoUrl = newVideo.video_url;
+      
+      // If a file was selected, upload it first
+      if (newVideo.video_file) {
+        if (!isVideoFile(newVideo.video_file)) {
+          toast({
+            title: 'Error',
+            description: 'Please select a valid video file.',
+            variant: 'destructive',
+          });
+          return;
+        }
+        
+        toast({
+          title: 'Uploading Video',
+          description: 'Please wait while your video is being uploaded...',
+        });
+        
+        try {
+          finalVideoUrl = await StorageService.uploadFile(newVideo.video_file);
+        } catch (uploadError: any) {
+          toast({
+            title: 'Upload Failed',
+            description: uploadError.message || 'Failed to upload video file.',
+            variant: 'destructive',
+          });
+          return;
+        }
+      }
+      
       const response = await fetch(`/api/courses/${courseId}/modules/${selectedModuleId}/videos`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          ...newVideo,
+          title: newVideo.title,
+          description: newVideo.description,
+          video_url: finalVideoUrl,
+          duration: newVideo.duration,
           order_index: 0 // Will be updated based on existing videos
         }),
       });
@@ -273,7 +317,7 @@ export default function CourseManagementPage() {
         });
         setIsVideoDialogOpen(false);
         setSelectedModuleId(null);
-        setNewVideo({ title: '', description: '', video_url: '', duration: 0 });
+        setNewVideo({ title: '', description: '', video_url: '', duration: 0, video_file: null });
         fetchModules();
       } else {
         throw new Error(responseData.error || `Server error: ${response.status}`);
@@ -364,6 +408,36 @@ export default function CourseManagementPage() {
   const openVideoDialog = (moduleId: string) => {
     setSelectedModuleId(moduleId);
     setIsVideoDialogOpen(true);
+  };
+
+  const handleDeleteVideo = async (courseId: string, moduleId: string, videoId: string) => {
+    if (!confirm('Are you sure you want to delete this video? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/courses/${courseId}/modules/${moduleId}/videos/${videoId}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        toast({
+          title: 'Video Deleted',
+          description: 'The video has been deleted successfully.',
+        });
+        fetchModules(); // Refresh the modules to update the video list
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to delete video');
+      }
+    } catch (error) {
+      console.error('Delete video error:', error);
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to delete video. Please try again.',
+        variant: 'destructive',
+      });
+    }
   };
 
   const formatDuration = (seconds: number) => {
@@ -550,7 +624,7 @@ export default function CourseManagementPage() {
                   {module.videos && module.videos.length > 0 ? (
                     <div className="space-y-2">
                       {module.videos.map((video, videoIndex) => (
-                        <div key={video.id} className="flex items-center justify-between p-3 border rounded">
+                        <div key={video.id} className="flex items-center justify-between p-3 border rounded group">
                           <div className="flex items-center gap-3">
                             <FileVideo className="h-5 w-5 text-muted-foreground" />
                             <div>
@@ -560,9 +634,20 @@ export default function CourseManagementPage() {
                               )}
                             </div>
                           </div>
-                          <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                            <Clock className="h-4 w-4" />
-                            {formatDuration(video.duration)}
+                          <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                              <Clock className="h-4 w-4" />
+                              {formatDuration(video.duration)}
+                            </div>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDeleteVideo(courseId, module.id, video.id)}
+                              className="opacity-0 group-hover:opacity-100 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/20 transition-opacity"
+                              title="Delete video"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
                           </div>
                         </div>
                       ))}
@@ -717,51 +802,19 @@ export default function CourseManagementPage() {
               />
             </div>
 
-            <div className="space-y-4">
-              <div className="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg p-4">
-                <div className="space-y-4">
-                  <div className="text-center">
-                    <p className="text-sm font-medium mb-2">Upload Video or Use URL</p>
-                  </div>
-                  
-                  <VideoUpload
-                    onVideoUploaded={handleVideoUploaded}
-                    maxSizeMB={500}
-                  />
-                  
-                  <div className="relative">
-                    <div className="absolute inset-0 flex items-center">
-                      <span className="w-full border-t" />
-                    </div>
-                    <div className="relative flex justify-center text-xs uppercase">
-                      <span className="bg-background px-2 text-muted-foreground">or</span>
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <label htmlFor="video-url" className="text-sm font-medium">
-                      Video URL (Direct Link)
-                    </label>
-                    <Input
-                      id="video-url"
-                      type="url"
-                      value={newVideo.video_url}
-                      onChange={(e) => setNewVideo({ ...newVideo, video_url: e.target.value })}
-                      placeholder="https://example.com/video.mp4"
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      Enter a direct link to a video file or use the upload option above
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <MediaInput
+              label="Video"
+              file={newVideo.video_file}
+              url={newVideo.video_url}
+              onFileChange={handleVideoFileChange}
+              onUrlChange={handleVideoUrlChange}
+            />
 
             <div className="flex gap-2 pt-4">
               <Button 
                 type="submit" 
                 className="flex-1"
-                disabled={!newVideo.video_url}
+                disabled={!newVideo.video_url && !newVideo.video_file}
               >
                 Add Video
               </Button>
@@ -771,7 +824,7 @@ export default function CourseManagementPage() {
                 onClick={() => {
                   setIsVideoDialogOpen(false);
                   setSelectedModuleId(null);
-                  setNewVideo({ title: '', description: '', video_url: '', duration: 0 });
+                  setNewVideo({ title: '', description: '', video_url: '', duration: 0, video_file: null });
                 }}
               >
                 Cancel
