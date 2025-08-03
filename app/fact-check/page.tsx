@@ -8,7 +8,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { MediaInput } from '@/components/ui/media-input';
 import { useToast } from '@/hooks/use-toast';
 import { CheckCircle } from 'lucide-react';
-import emailjs from '@emailjs/browser';
 
 export default function FactCheckPage() {
   const [formData, setFormData] = useState({
@@ -38,39 +37,42 @@ const handleSubmit = async (e: React.FormEvent) => {
         mediaInfo = `\nMedia URL: ${mediaUrl}`;
       }
 
-      // EmailJS configuration
-      const templateParams = {
-        to_email: 'info@zennews.net',
-        subject: `Fact Check Submission: ${formData.title}`,
-        title: formData.title,
-        url: formData.url || 'Not provided',
-        description: formData.description,
-        media_info: mediaInfo || 'No media attached',
-        timestamp: new Date().toLocaleString(),
-      };
+      // Submit to server-side API
+      const response = await fetch('/api/fact-check', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: formData.title,
+          url: formData.url,
+          description: formData.description,
+          mediaInfo: mediaInfo || 'No media attached',
+        }),
+      });
 
-      // EmailJS send email
-      await emailjs.send(
-        process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID!,
-        process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID!,
-        templateParams,
-        process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY!
-      );
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to submit');
+      }
 
       toast({
         title: 'Submission Received',
         description: "Thanks for submitting. We'll review your news and update it in the Fact Check section.",
       });
+      
+      // Clear form
       setFormData({ title: '', url: '', description: '' });
       setMediaUrl('');
       setMediaFile(null);
       setUploadedMediaData(null);
       
     } catch (error) {
-      console.error('EmailJS error:', error);
+      console.error('Submission error:', error);
       toast({
         title: 'Error',
-        description: 'Failed to send submission. Please try again later.',
+        description: error instanceof Error ? error.message : 'Failed to send submission. Please try again later.',
         variant: 'destructive',
       });
     }

@@ -12,7 +12,6 @@
     "analyze": "npm run build:analyze"
   },
   "dependencies": {
-    "@emailjs/browser": "^4.4.1",
     "@hookform/resolvers": "^3.9.0",
     "@radix-ui/react-accordion": "^1.2.0",
     "@radix-ui/react-alert-dialog": "^1.1.1",
@@ -47,7 +46,6 @@
     "@supabase/supabase-js": "^2.39.7",
     "@tailwindcss/typography": "^0.5.10",
     "@types/node": "20.6.2",
-    "@types/nodemailer": "^6.4.17",
     "@types/react": "18.2.22",
     "@types/react-dom": "18.2.7",
     "autoprefixer": "10.4.15",
@@ -81,6 +79,7 @@
   },
   "devDependencies": {
     "@next/bundle-analyzer": "^15.4.5",
+    "@types/nodemailer": "^6.4.17",
     "supabase": "^2.33.7",
     "webpack-bundle-analyzer": "^4.10.2"
   }
