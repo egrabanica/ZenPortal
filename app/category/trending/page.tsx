@@ -26,20 +26,20 @@ function CategoryHeader() {
             </h1>
           </div>
           <p className="text-xl text-muted-foreground mb-6">
-            Stay informed about the latest political campaigns, election coverage, and campaign developments.
+            A Zen News Campaign is a mindful approach to media literacy. We'll show you how to pause, fact-check your feed, and find your focus in a world of information overload. Learn to read articles critically, spot misinformation, and feel confident in what you know.
           </p>
           <div className="flex flex-wrap justify-center gap-2">
             <Badge variant="secondary" className="flex items-center gap-1">
               <Vote className="h-3 w-3" />
-              Elections
+              Fact-Checking
             </Badge>
             <Badge variant="outline" className="flex items-center gap-1">
               <Users className="h-3 w-3" />
-              Candidates
+              Mindful Reading
             </Badge>
             <Badge variant="outline" className="flex items-center gap-1">
               <Target className="h-3 w-3" />
-              Campaign Trail
+              Source Spotlight
             </Badge>
           </div>
         </div>
@@ -73,7 +73,7 @@ export default function TrendingPage() {
   return (
     <div className="min-h-screen bg-background">
       <CategoryHeader />
-      
+
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <Card className="bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800">
@@ -83,8 +83,7 @@ export default function TrendingPage() {
                 Campaign Coverage
               </h2>
               <p className="text-muted-foreground mb-4">
-                Comprehensive coverage of political campaigns, from candidate announcements to 
-                election results and everything in between.
+                A calm, comprehensive guide to navigating the news, from spotting fake headlines to understanding credible sources and everything in between.
               </p>
             </CardContent>
           </Card>
@@ -103,29 +102,29 @@ export default function TrendingPage() {
                   <div className="bg-blue-100 dark:bg-blue-900/30 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-2">
                     <Vote className="h-6 w-6 text-blue-600" />
                   </div>
-                  <h4 className="font-medium">Elections</h4>
-                  <p className="text-sm text-muted-foreground">Election coverage and results</p>
+                  <h4 className="font-medium">Verify</h4>
+                  <p className="text-sm text-muted-foreground">Fact-check headlines and identify misinformation.</p>
                 </div>
                 <div className="text-center">
                   <div className="bg-green-100 dark:bg-green-900/30 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-2">
                     <Users className="h-6 w-6 text-green-600" />
                   </div>
-                  <h4 className="font-medium">Candidates</h4>
-                  <p className="text-sm text-muted-foreground">Candidate profiles and updates</p>
+                  <h4 className="font-medium">Analyze</h4>
+                  <p className="text-sm text-muted-foreground">Read articles critically to spot bias.</p>
                 </div>
                 <div className="text-center">
                   <div className="bg-purple-100 dark:bg-purple-900/30 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-2">
                     <Target className="h-6 w-6 text-purple-600" />
                   </div>
-                  <h4 className="font-medium">Campaign Trail</h4>
-                  <p className="text-sm text-muted-foreground">Campaign events and rallies</p>
+                  <h4 className="font-medium">Sources</h4>
+                  <p className="text-sm text-muted-foreground">Discover and evaluate reliable news sources.</p>
                 </div>
                 <div className="text-center">
                   <div className="bg-orange-100 dark:bg-orange-900/30 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-2">
                     <Calendar className="h-6 w-6 text-orange-600" />
                   </div>
-                  <h4 className="font-medium">Schedule</h4>
-                  <p className="text-sm text-muted-foreground">Important campaign dates</p>
+                  <h4 className="font-medium">Reflect</h4>
+                  <p className="text-sm text-muted-foreground">Pause and step back to avoid information overload.</p>
                 </div>
               </div>
             </CardContent>
