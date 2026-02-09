@@ -10,7 +10,7 @@ import { useTheme } from 'next-themes';
 
 export function EUFundingBanner() {
   const { theme } = useTheme();
-  const [imageSrc, setImageSrc] = useState('/eulight.jpg');
+  const [imageSrc, setImageSrc] = useState('/eulight.JPG');
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -19,7 +19,7 @@ export function EUFundingBanner() {
 
   useEffect(() => {
     if (mounted) {
-      setImageSrc(theme === 'dark' ? '/eudark.jpg' : '/eulight.jpg');
+      setImageSrc(theme === 'dark' ? '/eudark.jpg' : '/eulight.JPG');
     }
   }, [theme, mounted]);
 
