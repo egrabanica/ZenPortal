@@ -3,6 +3,7 @@ import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { BannerAd } from '@/components/ads/banner-ad';
+import { EUFundingBanner } from '@/components/ads/eu-funding-banner';
 import { ArticleServerService } from '@/lib/articles-server';
 import { MarkdownRenderer } from '@/components/ui/markdown-renderer';
 import { MediaDisplay } from '@/components/ui/media-display';
@@ -21,14 +22,18 @@ async function ArticleData({ slug }: { slug: string }) {
   return (
     <article className="container mx-auto px-4 py-8">
       <div className="max-w-4xl mx-auto space-y-8">
+        {/* EU Banner moved to the very top */}
+        <EUFundingBanner />
+
         <div className="space-y-4">
-          {article.categories.map(cat => (
-            <Badge key={cat} className="capitalize mr-2">{cat}</Badge>
-          ))}
+          <div className="flex flex-wrap gap-2">
+            {article.categories.map(cat => (
+              <Badge key={cat} className="capitalize">{cat}</Badge>
+            ))}
+          </div>
           <h1 className="text-4xl font-bold leading-tight">{article.title}</h1>
           
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
-            {/* Add author name here if available */}
             <time dateTime={article.published_at as string}>
               {new Date(article.published_at as string).toLocaleDateString()}
             </time>
@@ -48,8 +53,6 @@ async function ArticleData({ slug }: { slug: string }) {
           </div>
         )}
 
-        <BannerAd />
-
         <div 
           className="prose dark:prose-invert max-w-full prose-lg prose-headings:text-foreground prose-p:text-foreground prose-strong:text-foreground prose-em:text-foreground prose-blockquote:text-foreground prose-code:text-foreground prose-pre:bg-muted prose-pre:text-foreground prose-a:text-primary hover:prose-a:text-primary/80"
           dangerouslySetInnerHTML={{ __html: article.content }}
@@ -61,6 +64,8 @@ async function ArticleData({ slug }: { slug: string }) {
             {/* Add sharing logic here if needed */}
           </div>
         </Card>
+
+        <BannerAd />
       </div>
     </article>
   );
